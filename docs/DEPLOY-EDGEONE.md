@@ -66,17 +66,13 @@ https://<项目名>.edgeone.app
 每次更新代码后：
 
 ```bash
-npm run build                              # 重新构建
-# 重新压缩 docs/deploy/qlu-mech-media-v2.zip（或按下方命令）
-```
-
-或直接执行：
-
-```powershell
-Compress-Archive -Path "dist\*" -DestinationPath "docs\deploy\qlu-mech-media-v2.zip" -Force
+npm run build                              # 1. 重新构建
+powershell -ExecutionPolicy Bypass -File scripts/package-deploy.ps1   # 2. 重新打包（自动自检）
 ```
 
 然后在 EdgeOne Pages 项目页再次「上传新版本」→「部署」即可，旧版本会自动保留可回滚。
+
+> 💡 打包脚本已修复 Windows 反斜杠问题（zip 规范要求正斜杠），并内置自检；如直接手动压缩，请确认 zip 内 `index.html` 在根目录、无 `assets\xxx` 形式的反斜杠路径。
 
 ---
 
