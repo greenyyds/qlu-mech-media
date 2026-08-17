@@ -12,11 +12,17 @@
 2. 注册完成后进入 https://console.cloud.tencent.com/developer/auth ，完成**个人实名认证**（微信扫码 + 身份证信息，几分钟内通过）
    - ⚠️ 实名是国内平台硬性要求，EdgeOne Pages 免费版也需要
 
-## 第 2 步：进入 EdgeOne Pages
+## 第 2 步：进入 EdgeOne Pages（国内版入口）
 
-方式 A（推荐）：直接打开 https://pages.edgeone.ai/ （EdgeOne Pages 官网，可用腾讯云账号登录）
+> ⚠️ 注意：`pages.edgeone.ai` 是**国际站**（邮箱/Google 登录），国内用户请用下面的腾讯云入口。
 
-方式 B：腾讯云控制台 https://console.cloud.tencent.com/edgeone → 左侧菜单找到「EdgeOne Pages」
+国内正确入口（任选其一）：
+
+- **方式 A（推荐）**：打开 https://edgeone.cloud.tencent.com/ → 用刚才注册的**腾讯云账号**登录 → 在页面中找到「**Pages**」入口（服务总览或导航菜单里）
+- **方式 B**：腾讯云控制台 https://console.cloud.tencent.com/edgeone → 左侧菜单找「**EdgeOne Pages**」
+- **方式 C**：腾讯云控制台顶部搜索框直接搜「**EdgeOne Pages**」
+
+> 如入口未显示：EdgeOne Pages 为免费能力，首次进入按页面提示开通即可（不产生费用）。
 
 ## 第 3 步：创建项目
 
@@ -78,6 +84,7 @@ Compress-Archive -Path "dist\*" -DestinationPath "docs\deploy\qlu-mech-media-v2.
 
 | 问题 | 说明 |
 | --- | --- |
+| 找不到腾讯云登录入口？ | `pages.edgeone.ai` 是国际站；国内请走 `edgeone.cloud.tencent.com` 或腾讯云控制台（见第 2 步） |
 | 免费额度够吗？ | 部门内部工具站点访问量很小，免费版流量额度足够；超额后腾讯云会提示，可随时升级或改用 COS |
 | 域名不满意？ | 可以绑定自己的域名（需已备案），控制台「自定义域名」中添加 |
 | 更新后手机还是旧版？ | PWA 缓存了旧资源，页面底部会弹出「发现新版本，刷新后生效」，点击刷新即可；或彻底关闭浏览器重开 |
@@ -86,6 +93,7 @@ Compress-Archive -Path "dist\*" -DestinationPath "docs\deploy\qlu-mech-media-v2.
 
 ## 相关链接
 
+- EdgeOne 国内入口：https://edgeone.cloud.tencent.com/
+- 腾讯云控制台 EdgeOne：https://console.cloud.tencent.com/edgeone
 - EdgeOne Pages 直接上传官方文档：https://pages.edgeone.ai/zh/document/direct-upload
-- EdgeOne Pages 控制台：https://pages.edgeone.ai/
 - 腾讯云实名认证：https://console.cloud.tencent.com/developer/auth
