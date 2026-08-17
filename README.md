@@ -78,34 +78,18 @@ npm run ai:test    # AI 真实生成端到端测试（消耗少量免费额度�
     └── components/            # 模块化组件（12 个）
 ```
 
-## 五、部署（GitHub Pages）
+## 五、部署（EdgeOne Pages · 国内直连）
 
-已配置自动部署流水线（`.github/workflows/deploy.yml`），步骤：
+**主方案：腾讯云 EdgeOne Pages**（免费、免备案、国内节点直连、自动 HTTPS）。
 
-1. 在 GitHub 创建仓库，建议命名 **`qlu-mech-media`**
-2. 推送代码到 `main` 分支：
-   ```bash
-   git init
-   git add .
-   git commit -m "v2: AI 新闻工具 + PWA + 深色模式"
-   git branch -M main
-   git remote add origin https://github.com/<你的用户名>/qlu-mech-media.git
-   git push -u origin main
-   ```
-3. 仓库 **Settings → Pages** → Source 选择 **"GitHub Actions"**
-4. 等待流水线跑完（约 1 分钟），访问：
+- 部署包：`docs/deploy/qlu-mech-media-v2.zip`（已生成）
+- 详细傻瓜式步骤：**见 [docs/DEPLOY-EDGEONE.md](docs/DEPLOY-EDGEONE.md)**（注册实名 → 创建项目 → 上传 zip → 获得 `https://<项目名>.edgeone.app` 链接，全程约 5 分钟）
 
-   **`https://<你的用户名>.github.io/qlu-mech-media/`**
+**备选方案：GitHub Pages**（已配置 Actions 自动部署流水线 `.github/workflows/deploy.yml`，国内部分网络直连不稳定，可作代码托管与备份）：
+1. 推送到 GitHub 仓库（建议名 `qlu-mech-media`），仓库 Settings → Pages → Source 选 "GitHub Actions"
+2. 访问 `https://<用户名>.github.io/qlu-mech-media/`
 
-### 国内访问说明
-
-- `github.io` 国内多数网络可直连；若个别网络 DNS 污染打不开：
-  - 手机可改用"添加到主屏幕"的 PWA 入口（已安装后离线也能开）
-  - 或后期绑定 Cloudflare（免费、免备案）：将仓库 Pages 自定义域名设为你的域名，Cloudflare 侧加 CNAME 即可
-
-### 其他平台
-
-`base: './'` 已配置，`dist/` 可直接部署到 Vercel / Netlify / 任意静态服务器。
+**其他平台**：`base: './'` 已配置，`dist/` 可直接部署到 Vercel / Netlify / 腾讯云 COS 静态网站等任意静态托管。
 
 ## 六、数据层说明（替换指南）
 
