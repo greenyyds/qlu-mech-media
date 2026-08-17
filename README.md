@@ -78,18 +78,16 @@ npm run ai:test    # AI 真实生成端到端测试（消耗少量免费额度�
     └── components/            # 模块化组件（12 个）
 ```
 
-## 五、部署（EdgeOne Pages · 国内直连）
+## 五、部署
 
-**主方案：腾讯云 EdgeOne Pages**（免费、免备案、国内节点直连、自动 HTTPS）。
+**当前方案：GitHub Pages（免备案，立即可用）** —— 操作卡见 **[docs/DEPLOY-GITHUB-PAGES.md](docs/DEPLOY-GITHUB-PAGES.md)**
 
-- 部署包：`docs/deploy/qlu-mech-media-v2.zip`（已生成）
-- 详细傻瓜式步骤：**见 [docs/DEPLOY-EDGEONE.md](docs/DEPLOY-EDGEONE.md)**（注册实名 → 创建项目 → 上传 zip → 获得 `https://<项目名>.edgeone.app` 链接，全程约 5 分钟）
+- 目标链接：`https://greenyyds.github.io/qlu-mech-media/`
+- 自动部署流水线已配置（`.github/workflows/deploy.yml`，push 到 main 即发布）
 
-**备选方案：GitHub Pages**（已配置 Actions 自动部署流水线 `.github/workflows/deploy.yml`，国内部分网络直连不稳定，可作代码托管与备份）：
-1. 推送到 GitHub 仓库（建议名 `qlu-mech-media`），仓库 Settings → Pages → Source 选 "GitHub Actions"
-2. 访问 `https://<用户名>.github.io/qlu-mech-media/`
+**长期方案：学校子域名**（最稳最合规，免重新备案）—— 申请学校已备案主域名下的子域（如 `media.qlu.edu.cn`），绑定到 EdgeOne Pages / COS / 校内托管，代码零改动。备选：自有域名备案后绑 EdgeOne Pages（见 [docs/DEPLOY-EDGEONE.md](docs/DEPLOY-EDGEONE.md)，部署包 `docs/deploy/qlu-mech-media-v2.zip` 已就绪）。
 
-**其他平台**：`base: './'` 已配置，`dist/` 可直接部署到 Vercel / Netlify / 腾讯云 COS 静态网站等任意静态托管。
+**其他平台**：`base: './'` 已配置，`dist/` 可直接部署到 Vercel / Netlify / 任意静态托管。
 
 ## 六、数据层说明（替换指南）
 
