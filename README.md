@@ -80,9 +80,9 @@ npm run ai:test    # AI 真实生成端到端测试（消耗少量免费额度�
 
 ## 五、部署
 
-**当前方案：GitHub Pages（免备案，立即可用）** —— 操作卡见 **[docs/DEPLOY-GITHUB-PAGES.md](docs/DEPLOY-GITHUB-PAGES.md)**
+**当前方案：GitHub Pages（免备案，已上线）** —— 操作卡见 **[docs/DEPLOY-GITHUB-PAGES.md](docs/DEPLOY-GITHUB-PAGES.md)**
 
-- 目标链接：`https://greenyyds.github.io/qlu-mech-media/`
+- **正式链接（已上线）：`https://greenyyds.github.io/qlu-mech-media/`**
 - 自动部署流水线已配置（`.github/workflows/deploy.yml`，push 到 main 即发布）
 
 **长期方案：学校子域名**（最稳最合规，免重新备案）—— 申请学校已备案主域名下的子域（如 `media.qlu.edu.cn`），绑定到 EdgeOne Pages / COS / 校内托管，代码零改动。备选：自有域名备案后绑 EdgeOne Pages（见 [docs/DEPLOY-EDGEONE.md](docs/DEPLOY-EDGEONE.md)，部署包 `docs/deploy/qlu-mech-media-v2.zip` 已就绪）。
