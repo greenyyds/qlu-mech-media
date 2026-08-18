@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { id: 'news', label: '新闻工具' },
   { id: 'tasks', label: '任务规划' },
   { id: 'roster', label: '值班表' },
+  { id: 'feedback', label: '意见反馈', href: '#/feedback' },
   { id: 'about', label: '关于' },
 ]
 
@@ -87,7 +88,7 @@ export default function Navbar() {
             {NAV_LINKS.map((l) => (
               <a
                 key={l.id}
-                href={`#${l.id}`}
+                href={l.href || `#${l.id}`}
                 className="rounded-full px-4 py-2 text-sm text-secondary transition-colors duration-300 hover:bg-black/5 hover:text-ink dark:hover:bg-white/10"
               >
                 {l.label}
@@ -131,7 +132,7 @@ export default function Navbar() {
           {NAV_LINKS.map((l) => (
             <a
               key={l.id}
-              href={`#${l.id}`}
+              href={l.href || `#${l.id}`}
               onClick={() => setOpen(false)}
               className="block rounded-xl px-3 py-3 text-[15px] text-ink transition-colors hover:bg-black/5 dark:hover:bg-white/10"
             >

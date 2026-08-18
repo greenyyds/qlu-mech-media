@@ -11,8 +11,8 @@
 | 项 | 值 |
 |---|---|
 | 正式网址 | **https://greenyyds.github.io/qlu-mech-media/** |
-| 技术栈 | Vite 5 + React 18 + Tailwind CSS v4（纯静态站，无后端） |
-| 数据存储 | 每个访问者的浏览器 localStorage（本机数据，不共享） |
+| 技术栈 | Vite 5 + React 18 + Tailwind CSS v4（静态前端） |
+| 数据存储 | **双模式**：配置 CloudBase 后云端共享（推荐）；未配置时各人浏览器 localStorage |
 | AI 模型 | 智谱 GLM-4-Flash（免费），Key 在前端 `src/config/aiConfig.js` |
 | 部署方式 | 推送到 GitHub `main` 分支 → GitHub Actions 自动构建发布（约 1 分钟） |
 | 代码仓库 | https://github.com/greenyyds/qlu-mech-media |
@@ -24,15 +24,19 @@
 | 想改的内容 | 修改文件 | 说明 |
 |---|---|---|
 | 公告横幅文字 | `src/components/NoticeBanner.jsx`（顶部 NOTICE_TEXT） | 可关闭，关闭状态在访问者本机 |
-| 值班表成员/排班 | `src/data/roster.js` | 这是"默认值"；用户改过的数据存在各自浏览器 |
+| 值班表成员/排班（默认值） | `src/data/roster.js` | 云端模式下改的是 CloudBase 数据（页面上编辑）；此文件是"初始默认值" |
+| 风采展示照片/文案 | `src/data/gallery.js` + `src/assets/gallery/` | 换图：替换图片文件 + 改配置（标题/日期/alt） |
+| 意见反馈页文案/分类 | `src/components/FeedbackPage.jsx`（CATEGORIES 数组） | 页面结构 |
+| 反馈页密码开关 | `src/config/feedbackConfig.js` | `protected: true` + 密码哈希后启用 |
 | 常用链接（增删改） | `src/data/links.js` | url 留空会显示"待配置"占位，不会产生死链接 |
-| 任务看板示例任务 | `src/services/taskService.js`（buildSeedTasks） | 只影响首次打开的用户 |
-| 新闻工具选项（增删） | `src/data/newsToolConfig.js` | 控件自动渲染，支持 select/textarea/text/date/chips/url-list/switch |
+| 任务看板示例任务 | `src/services/taskService.js`（buildSeedTasks） | 仅本地模式首次打开生效 |
+| 新闻工具选项（增删） | `src/data/newsToolConfig.js` | 控件自动渲染，支持七种控件类型 |
 | AI 模型 / Key / 参数 | `src/config/aiConfig.js` | 换模型改 model/baseUrl；换 Key 改 apiKey |
 | AI 生成提示词规则 | `src/services/newsService.js`（buildSystemPrompt） | 事实纪律、篇幅、风格都在这里 |
+| **云端开关（共享/本地）** | `src/config/cloudConfig.js` | `envId` 填写 = 云端共享；留空 = 本地模式 |
 | 配色 / 圆角 / 动效 | `src/index.css`（@theme 设计令牌） | 浅色/深色都走 CSS 变量 |
 | 导航菜单项 / 主题切换 | `src/components/Navbar.jsx` | NAV_LINKS 数组 |
-| 页面整体布局 | `src/App.jsx` | 各模块的挂载顺序 |
+| 页面整体布局 / 路由 | `src/App.jsx` + `src/utils/router.js` | 二级页约定：hash 以 `#/` 开头 |
 
 ## 三、标准维护流程（每次改版就做这 3 步）
 
@@ -70,15 +74,20 @@ git push origin main
 | 页面显示旧内容 | PWA 缓存了旧版本 | 页面底部会弹"发现新版本"，点刷新；或彻底关闭浏览器重开 |
 | AI 生成报错 | 1) Key 失效/额度耗尽；2) 网络问题 | 换 `src/config/aiConfig.js` 里的 Key；重试 |
 | 生成内容乱编细节 | 提示词有事实纪律，但 AI 仍可能出错 | 人工核对后发布；可在 `newsService.js` 加强提示词 |
+| 数据不共享（显示"本机数据"） | CloudBase 未配置或 envId 为空 | 检查 `src/config/cloudConfig.js` 的 envId；见 README 第三节接入步骤 |
+| 显示"离线模式" | 云端网络失败 | 检查网络；确认 CloudBase 环境未欠费/未停用；服务恢复自动回云端 |
+| 云端数据被改乱/误删 | 公开读写模式（无登录系统） | 页脚"导出数据备份"定期备份；重要数据建议每周导出一份 |
+| CloudBase 免费额度耗尽 | 资源点用超 | 控制台查看用量；可清空 envId 降级本地模式，或升级付费 |
+| 反馈页无法进入（提示密码） | `feedbackConfig.protected` 被置 true | 输入密码；或把 protected 改回 false 重新部署 |
 | 本地 npm run dev 崩溃 | Windows 文件监听偶发问题 | 重启 `npm run dev` 即可，不影响线上 |
 
 ## 六、交给新 AI / 新同学接手时（重要）
 
 新对话/新 AI 快速进入状态，只需让它按顺序读：
 
-1. **`README.md`** —— 功能清单、架构、数据层、部署
+1. **`README.md`** —— 功能清单、架构、数据层（双模式）、部署
 2. **`MAINTENANCE.md`（本文件）** —— 维护地图、流程、故障排查
-3. 动手前读：`src/config/aiConfig.js`、`src/data/newsToolConfig.js`、`src/services/taskService.js`、`vite.config.js`
+3. 动手前读：`src/config/cloudConfig.js`、`src/config/aiConfig.js`、`src/config/feedbackConfig.js`、`src/services/taskService.js`、`vite.config.js`
 
 > 对本文件或 README 的任何重大变更（新模块、新流程），请同步更新文档——这是"长期维护不依赖记忆"的根本保证。
 

@@ -1,5 +1,5 @@
 /**
- * 生成成品截图（docs/screenshots/v2/）
+ * 生成成品截图（docs/screenshots/v3/）
  * 运行：node scripts/capture-screens.mjs（需先 npm run preview）
  */
 import puppeteer from 'puppeteer-core'
@@ -7,7 +7,7 @@ import { existsSync, mkdirSync } from 'node:fs'
 
 const PREVIEW_URL = process.env.PREVIEW_URL || 'http://localhost:4173/'
 const OUT_DIR = decodeURIComponent(
-  new URL('../docs/screenshots/v2/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
+  new URL('../docs/screenshots/v3/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
 )
 
 function findBrowser() {
@@ -34,36 +34,37 @@ const revealAll = () =>
     document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible'))
   })
 
-// 桌面端 · 浅色
+// 桌面端 · 首页（含风采轮播）
 await page.setViewport({ width: 1440, height: 900 })
 await page.goto(PREVIEW_URL, { waitUntil: 'networkidle0' })
 await revealAll()
-await new Promise((r) => setTimeout(r, 400))
-await page.screenshot({ path: `${OUT_DIR}/desktop-light-full.png`, fullPage: true })
-await page.evaluate(() => window.scrollTo(0, 0))
-await page.screenshot({ path: `${OUT_DIR}/desktop-light-hero.png` })
+await new Promise((r) => setTimeout(r, 500))
+await page.screenshot({ path: `${OUT_DIR}/desktop-home-full.png`, fullPage: true })
 
-// 桌面端 · 深色
+// 桌面端 · 轮播特写
 await page.evaluate(() => {
-  // 直接切深色（点击切换按钮：system->light->dark 需两次，这里用 evaluate 设置 class）
-  document.documentElement.classList.add('dark')
+  document.querySelector('[aria-roledescription="轮播"]')?.scrollIntoView()
 })
-await new Promise((r) => setTimeout(r, 600))
-await page.screenshot({ path: `${OUT_DIR}/desktop-dark-full.png`, fullPage: true })
+await new Promise((r) => setTimeout(r, 400))
+await page.screenshot({ path: `${OUT_DIR}/desktop-gallery.png` })
 
-// 移动端 · 浅色
+// 反馈页
+await page.evaluate(() => {
+  window.location.hash = '#/feedback'
+})
+await new Promise((r) => setTimeout(r, 800))
+await revealAll()
+await page.screenshot({ path: `${OUT_DIR}/desktop-feedback.png` })
+
+// 移动端 · 首页
+await page.evaluate(() => {
+  window.location.hash = '#/'
+})
 await page.setViewport({ width: 375, height: 812 })
 await page.goto(PREVIEW_URL, { waitUntil: 'networkidle0' })
 await revealAll()
 await new Promise((r) => setTimeout(r, 400))
-await page.screenshot({ path: `${OUT_DIR}/mobile-light-full.png`, fullPage: true })
-
-// 移动端 · 新闻工具区特写（生成前）
-await page.evaluate(() => {
-  document.getElementById('news')?.scrollIntoView()
-})
-await new Promise((r) => setTimeout(r, 500))
-await page.screenshot({ path: `${OUT_DIR}/mobile-news-tool.png` })
+await page.screenshot({ path: `${OUT_DIR}/mobile-home-full.png`, fullPage: true })
 
 await browser.close()
-console.log(`截图已保存至 docs/screenshots/v2/`)
+console.log('截图已保存至 docs/screenshots/v3/')

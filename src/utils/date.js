@@ -66,3 +66,26 @@ export function isOverdue(iso) {
   if (Number.isNaN(d.getTime())) return false
   return startOfDay(d) < startOfDay(new Date())
 }
+
+/** 相对时间：刚刚 / N 分钟前 / N 小时前 / 昨天 / M月d日（用于反馈列表） */
+export function formatRelativeTime(ts) {
+  if (!ts) return ''
+  const diff = Date.now() - Number(ts)
+  const minute = 60000
+  const hour = 3600000
+  const day = 86400000
+  if (diff < minute) return '刚刚'
+  if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`
+  if (diff < day) return `${Math.floor(diff / hour)} 小时前`
+  if (diff < 2 * day) return '昨天'
+  const d = new Date(Number(ts))
+  if (Number.isNaN(d.getTime())) return ''
+  return `${d.getMonth() + 1}月${d.getDate()}日`
+}
+
+/** SHA-256 十六进制（Web Crypto API，用于密码校验） */
+export async function sha256(text) {
+  const data = new TextEncoder().encode(String(text))
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}

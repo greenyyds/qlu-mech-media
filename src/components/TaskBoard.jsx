@@ -7,25 +7,30 @@ import Reveal from './Reveal'
 import SectionHeading from './SectionHeading'
 import TaskColumn from './TaskColumn'
 import TaskModal from './TaskModal'
+import DataStatusBadge from './DataStatusBadge'
 
 /**
  * 任务规划模块：本周重点任务
  * - 看板三列：待办 / 进行中 / 已完成
  * - 支持添加、编辑、删除、跨列拖拽
- * - 数据统一走 services/taskService.js（localStorage 持久化），组件不直接操作存储
+ * - 数据统一走 services/taskService.js（云端共享 / 本地两种模式）
  */
 export default function TaskBoard() {
   const [tasks, setTasks] = useState(null) // null = 加载中
   const [draggingId, setDraggingId] = useState(null)
   const [overStatus, setOverStatus] = useState(null)
   const [modal, setModal] = useState(null) // null | { mode:'create' } | { mode:'edit', task }
+  const [dataStatus, setDataStatus] = useState(taskService.getDataStatus())
 
   const weekRange = getWeekRange()
 
   useEffect(() => {
     let alive = true
     taskService.listTasks().then((list) => {
-      if (alive) setTasks(list)
+      if (alive) {
+        setTasks(list)
+        setDataStatus(taskService.getDataStatus())
+      }
     })
     return () => {
       alive = false
@@ -34,6 +39,7 @@ export default function TaskBoard() {
 
   const refresh = async () => {
     setTasks(await taskService.listTasks())
+    setDataStatus(taskService.getDataStatus())
   }
 
   const handleCreate = async (data) => {
@@ -70,9 +76,10 @@ export default function TaskBoard() {
               align="left"
               eyebrow="Task Board"
               title="本周重点任务"
-              description="拖动卡片调整状态，任务数据保存在本机浏览器，刷新不丢失。"
+              description="拖动卡片调整状态，数据在所有成员之间共享。"
             />
             <div className="flex items-center gap-3">
+              <DataStatusBadge status={dataStatus} />
               <span className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-[13px] font-medium text-secondary">
                 {weekRange.label}
               </span>

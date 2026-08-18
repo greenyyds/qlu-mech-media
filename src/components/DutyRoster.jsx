@@ -4,19 +4,22 @@ import * as dutyService from '../services/dutyService'
 import { getWeekRange, toISODate } from '../utils/date'
 import Reveal from './Reveal'
 import SectionHeading from './SectionHeading'
+import DataStatusBadge from './DataStatusBadge'
 
 /**
  * 本周值班表（可编辑）
- * 数据维护：页面上直接编辑（每天 ≤4 人），localStorage 持久化
- * 数据层：src/services/dutyService.js（可替换为后端接口）
+ * 数据维护：页面上直接编辑（每天 ≤4 人），云端共享 / 本地持久化
+ * 数据层：src/services/dutyService.js
  */
 export default function DutyRoster() {
   const [days, setDays] = useState(null) // null = 加载中
   const [editing, setEditing] = useState(false)
+  const [dataStatus, setDataStatus] = useState(dutyService.getDataStatus())
   const todayISO = toISODate(new Date())
 
   const refresh = useCallback(async () => {
     setDays(await dutyService.listWeek())
+    setDataStatus(dutyService.getDataStatus())
   }, [])
 
   useEffect(() => {
@@ -58,6 +61,7 @@ export default function DutyRoster() {
               description={editing ? '编辑模式：可增删每日值班成员，改动即时保存。' : '每日值班成员安排，点击「编辑」可修改。'}
             />
             <div className="flex items-center gap-3">
+              <DataStatusBadge status={dataStatus} />
               <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-2 text-[13px] font-medium text-secondary">
                 <CalendarDays size={14} aria-hidden="true" />
                 {getWeekRange().label}

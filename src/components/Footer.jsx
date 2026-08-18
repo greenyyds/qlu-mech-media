@@ -1,5 +1,8 @@
+import { useState } from 'react'
+import { Check, Download } from 'lucide-react'
 import Logo from './Logo'
 import uniLogo from '../assets/uni-logo-blue.png'
+import { exportBackup } from '../services/backupService'
 
 /** 页脚快速导航 */
 const NAV = [
@@ -8,14 +11,22 @@ const NAV = [
   { id: 'news', label: '新闻工具' },
   { id: 'tasks', label: '任务规划' },
   { id: 'roster', label: '值班表' },
+  { id: 'feedback', label: '意见反馈', href: '#/feedback' },
 ]
 
 /**
  * 页脚（含"关于"锚点）
- * 版权信息、学部名称、简洁链接，保持极简
+ * 版权信息、学部名称、简洁链接、数据备份导出
  */
 export default function Footer() {
   const year = new Date().getFullYear()
+  const [backedUp, setBackedUp] = useState(false)
+
+  const handleBackup = async () => {
+    await exportBackup()
+    setBackedUp(true)
+    setTimeout(() => setBackedUp(false), 2500)
+  }
 
   return (
     <footer id="about" className="scroll-mt-24 border-t border-line bg-surface">
@@ -41,7 +52,10 @@ export default function Footer() {
             <ul className="mt-4 space-y-2.5">
               {NAV.map((l) => (
                 <li key={l.id}>
-                  <a href={`#${l.id}`} className="text-[13.5px] text-secondary transition-colors hover:text-accent">
+                  <a
+                    href={l.href || `#${l.id}`}
+                    className="text-[13.5px] text-secondary transition-colors hover:text-accent"
+                  >
                     {l.label}
                   </a>
                 </li>
@@ -61,7 +75,11 @@ export default function Footer() {
                 </a>
               </li>
               <li>联系方式：详见部门群公告</li>
-              <li>建议反馈：联系部门技术组</li>
+              <li>
+                <a href="#/feedback" className="transition-colors hover:text-accent">
+                  建议反馈：意见反馈页
+                </a>
+              </li>
             </ul>
             {/* 校 LOGO（横版透明 PNG，已压缩） */}
             <img
@@ -73,9 +91,28 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-line pt-6 text-[12.5px] text-tertiary md:flex-row md:items-center">
+        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-[12.5px] text-tertiary md:flex-row md:items-center">
           <p>© {year} 齐鲁工业大学机械工程学部全媒体 · 内部工具</p>
-          <p>任务数据仅保存在本机浏览器，不上传服务器</p>
+          <div className="flex items-center gap-4">
+            <p>数据云端共享 · 请勿外传链接</p>
+            <button
+              type="button"
+              onClick={handleBackup}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-medium text-secondary transition-colors hover:text-accent"
+            >
+              {backedUp ? (
+                <>
+                  <Check size={13} aria-hidden="true" />
+                  已导出
+                </>
+              ) : (
+                <>
+                  <Download size={13} aria-hidden="true" />
+                  导出数据备份
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </footer>
