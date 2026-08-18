@@ -122,25 +122,27 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* 移动端下拉菜单 */}
+      {/* 移动端下拉菜单（grid-rows 动画：高度自适应内容，永不被固定高度截断） */}
       <div
         id="mobile-nav"
-        className={`overflow-hidden transition-[max-height,opacity] duration-300 md:hidden ${
-          open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        className={`grid transition-[grid-template-rows,opacity] duration-300 md:hidden ${
+          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
       >
-        <nav aria-label="移动端导航" className="space-y-1 border-t border-line px-5 pb-5 pt-2">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.id}
-              href={l.href || `#${l.id}`}
-              onClick={() => setOpen(false)}
-              className="block rounded-xl px-3 py-3 text-[15px] text-ink transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-            >
-              {l.label}
-            </a>
-          ))}
-        </nav>
+        <div className="overflow-hidden">
+          <nav aria-label="移动端导航" className="space-y-1 border-t border-line px-5 pb-5 pt-2">
+            {NAV_LINKS.map((l) => (
+              <a
+                key={l.id}
+                href={l.href || `#${l.id}`}
+                onClick={() => setOpen(false)}
+                className="block rounded-xl px-3 py-3 text-[15px] text-ink transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+        </div>
       </div>
     </header>
   )

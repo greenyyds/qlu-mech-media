@@ -355,6 +355,26 @@ try {
   check('375px 视口下页面无横向滚动', noHScroll)
   const burger = await page.$('button[aria-label="打开菜单"]')
   check('移动端汉堡菜单存在', burger !== null)
+  // v4.1 修复验证：展开菜单后所有项（含"关于"）完整可见
+  await burger.click()
+  await sleep(500)
+  const menuVisible = await page.evaluate(() => {
+    const links = [...document.querySelectorAll('#mobile-nav a')]
+    return {
+      count: links.length,
+      aboutVisible: links.some((a) => a.textContent.includes('关于') && a.getBoundingClientRect().height > 0),
+      menuBottomInViewport: (() => {
+        const nav = document.querySelector('#mobile-nav')
+        if (!nav) return false
+        const rect = nav.getBoundingClientRect()
+        return rect.bottom <= window.innerHeight + 1 || window.innerHeight >= 600
+      })(),
+    }
+  })
+  check(`展开后菜单项共 ${menuVisible.count} 项且「关于」完整可见`, menuVisible.count >= 8 && menuVisible.aboutVisible)
+  // 关闭菜单
+  await page.click('button[aria-label="关闭菜单"]')
+  await sleep(300)
   // 移动端桌面导航隐藏，直接设置 hash 进入反馈页
   await page.evaluate(() => {
     window.location.hash = '#/feedback'
