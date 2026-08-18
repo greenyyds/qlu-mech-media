@@ -79,10 +79,30 @@
 - **任务看板 + 值班表乐观更新**：操作瞬间本地 UI 立即生效，云端同步放后台，失败自动回滚（消除 2 次网络往返的卡顿）
 - **离线诊断提示**：云端异常时导航下方显示原因横幅（匿名登录未开 / 集合缺失 / 网络或安全域名问题），便于自愈排查
 - **风采图片 WebP 化**：946KB → 369KB（省 61%），新增 `scripts/convert-gallery-webp.mjs` 可复用
-- 新增 `scripts/convert-gallery-webp.mjs`、离线横幅组件
+- 新增 `scripts/convert-gallery-webp.mjs`、离线横幅组件 `OfflineNotice`
 
-**已知事项**
-- 生产环境 CORS 拦截（Web 安全域名未配置）已定位：CloudBase 的 Web 安全域名无开放 API，需控制台手动添加 `https://greenyyds.github.io`（见 docs/CLOUDBASE-SETUP.md 第 2 步）；完成后离线横幅与徽标自动恢复云端共享
+## v3.2.1 — 云端共享彻底修复（Web 安全域名）
+
+**问题**：线上长期"离线模式"（云端共享未生效）。
+
+**根因链（完整排查记录）**
+1. 线上请求 `api.tcloudbasegateway.com/auth/v1/signin/anonymously` 被 **CORS 拦截**（`net::ERR_FAILED`）
+2. 原因：CloudBase **Web 安全域名（CORS 白名单）未配置**
+3. 此前尝试用 TCB SDK `CreateAuthDomain` API 添加 → 带 `https://` 前缀，格式错误（官方要求**不含协议前缀**），且该 API 与实际生效的 CORS 白名单存在差异
+4. 本地 `localhost` 测试通过的原因：CloudBase 默认放行 localhost（开发便利），生产域名严格校验
+
+**修复**（官方 CLI 标准操作，见 [docs.cloudbase.net/cli-v1/cors](https://docs.cloudbase.net/cli-v1/cors)）
+```bash
+npm i -g @cloudbase/cli
+tcb login --apiKeyId <SecretId> --apiKey <SecretKey>
+tcb cors add greenyyds.github.io -e <envId>   # 不带协议前缀；交互确认输入 y
+tcb cors list -e <envId>                       # 验证 Enabled
+tcb logout                                     # 用完即清理
+```
+
+**验证**：线上站徽标「云端共享」、控制台 0 错误、双实例共享测试通过。
+
+**沉淀**：`docs/CLOUDBASE-SETUP.md` 已更新正确格式与 CLI 方式；API 密钥坚持"用完即删"原则（本次已轮换 3 次密钥）。
 
 ---
 
@@ -95,6 +115,7 @@
 | v2.5.0 | 部署上线 | GitHub Pages、Actions 自动部署 |
 | v3.0.0 | 架构升级 | CloudBase 共享、风采轮播、反馈页 |
 | v3.1.0 | 稳定性 | 离线自动恢复 |
+| v3.2.x | 体验与修复 | 乐观更新、离线诊断、WebP 提速、Web 安全域名 |
 
 ## 未来方向（技术债清单）
 

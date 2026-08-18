@@ -68,7 +68,7 @@ npm run smoke      # 50 项冒烟测试，必须全绿
 |---|---|---|
 | CloudBase 环境选成 PostgreSQL | 页面报 "no document database instance" | 创建环境必须选**文档数据库**；用 `configure-cloudbase.mjs` 验证 |
 | 密钥写进代码 | 泄露风险 | 密钥只走环境变量，用完即删 |
-| Web 安全域名带端口 | API 拒绝（invalid domain） | 只加正式域名（`https://greenyyds.github.io`） |
+| **Web 安全域名带协议前缀** | 线上 CORS 拦截、长期离线模式 | 用官方 CLI：`tcb cors add greenyyds.github.io -e <envId>`（**不带 https://**） |
 | PowerShell 改 JS 时 `\r\n` 字面量 | 构建报 "Expected unicode escape" | 替换文本用真实换行符 |
 | zip 用 Compress-Archive 打包 | 平台拒绝上传（反斜杠） | 用 `scripts/package-deploy.ps1` |
 | 改版后线上还是旧版 | PWA 缓存 | 等待页面底部"发现新版本"提示点刷新，或清缓存 |

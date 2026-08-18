@@ -52,6 +52,9 @@
 | 7 | hash 路由约定（`#/` 前缀） | 避免引入 react-router 依赖；主页锚点（#home 等）与二级页（#/feedback）不冲突 | 极简；多级路由需扩展 |
 | 8 | 提示词内置"事实纪律" | AI 会编造姓名/数字，新闻稿场景不可接受 | 未提供信息输出【】占位，仍需人工核对 |
 | 9 | 反馈页密码为前端校验 | 纯静态站无法真正鉴权 | "防君子"级别；正式方案待登录系统（见 CHANGELOG 技术债） |
+| 10 | 乐观更新（UI 先行） | 云端免费套餐单次 200-500ms，两次往返造成明显卡顿 | 操作即时生效，云端后台同步，失败回滚；数据一致性以云端为准 |
+| 11 | 离线原因诊断横幅 | "离线模式"含义模糊，成员不知原因无法自愈 | cloudService 记录错误并分类（匿名登录/集合/网络或安全域名），顶部横幅展示 |
+| 12 | Web 安全域名用 CLI 配置 | TCB SDK 的 CreateAuthDomain 格式不兼容（带协议前缀） | 规范：`tcb cors add 域名 -e 环境ID`（不带协议前缀），仅控制台/CLI 可配 |
 
 ## 四、数据模型
 
@@ -85,14 +88,16 @@
 | `npm run ai:test` | AI 真实生成端到端（消耗少量免费额度） | AI 相关改动后 |
 | `node scripts/cloud-share-test.mjs` | 双浏览器实例云端共享验证（A 加 B 见） | 云端/数据层改动后 |
 | `node scripts/capture-screens.mjs` | 生成截图（docs/screenshots/） | 视觉改版后 |
+| `node scripts/convert-gallery-webp.mjs` | 风采图片转 WebP（1280px q75，自动删 jpg） | 更换风采照片后 |
 | `powershell scripts/package-deploy.ps1` | 打包部署 zip（正斜杠修复 + 自检） | EdgeOne 备选部署时 |
-| `node scripts/configure-cloudbase.mjs` | CloudBase 环境一键配置（匿名登录/安全域名/集合/规则） | 重建环境时（密钥走环境变量） |
+| `node scripts/configure-cloudbase.mjs` | CloudBase 环境一键配置（匿名登录/集合/规则） | 重建环境时（密钥走环境变量） |
+| `tcb cors add <域名> -e <envId>` | Web 安全域名配置（官方 CLI，**域名不带协议前缀**） | 新环境/换域名时 |
 
 ## 七、性能与体积基线
 
 - 主包 JS：234KB（gzip ~68KB，不含动态加载的 CloudBase SDK 742KB）
 - CSS：45KB（gzip ~8KB）
-- 风采图片：4 张共 946KB（原图 30MB 已压缩至 1600px 宽 q80）
+- 风采图片：4 张 WebP 共 369KB（原图 30MB 已压缩；转换脚本 `scripts/convert-gallery-webp.mjs`）
 - 无外部字体/图片依赖（PWA 图标与官方 API 除外）
 
 ## 八、演进方向（详见 CHANGELOG 技术债）
