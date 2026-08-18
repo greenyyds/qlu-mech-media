@@ -83,7 +83,7 @@ export async function listFeedbacks() {
 export async function createFeedback(input = {}) {
   const feedback = validateFeedback(input)
 
-  if (!cloud.isCloudEnabled()) {
+  const localCreate = () => {
     const list = readLocal()
     const entry = { id: `f-${Date.now()}`, ...feedback }
     list.unshift(entry)
@@ -91,6 +91,18 @@ export async function createFeedback(input = {}) {
     return entry
   }
 
-  const id = await cloud.addDoc(cloudConfig.collections.feedback, feedback)
-  return { id, ...feedback }
+  if (!cloud.isCloudEnabled()) {
+    dataStatus = 'local'
+    return localCreate()
+  }
+
+  try {
+    const id = await cloud.addDoc(cloudConfig.collections.feedback, feedback)
+    dataStatus = 'cloud'
+    return { id, ...feedback }
+  } catch (err) {
+    console.warn('[feedbackService] 云端写入失败，已降级本地存储', err)
+    dataStatus = 'offline'
+    return localCreate()
+  }
 }

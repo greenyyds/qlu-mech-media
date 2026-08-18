@@ -31,7 +31,9 @@ async function getApp() {
     throw new Error('云端环境未配置（本地模式）')
   }
   if (!app) {
-    const cloudbase = await loadSDK()
+    const mod = await loadSDK()
+    // SDK 为 CommonJS 打包，动态导入时初始化方法在 default 上
+    const cloudbase = mod.default || mod
     app = cloudbase.init({ env: cloudConfig.envId })
   }
   return app

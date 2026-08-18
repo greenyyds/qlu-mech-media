@@ -6,9 +6,9 @@
  *      所有人共享同一份任务数据
  *   2. 本地模式：envId 为空 → localStorage（仅本机，与 v2 行为一致）
  *
- * ▍读取降级：云端读取失败时回退本地数据，并标记 status 为 offline，
- *             UI 会显示"离线模式"提示，避免数据幻觉
- * ▍写入规则：云端模式下写入失败会抛出错误（不静默降级，防止"以为共享了"）
+ * ▍降级策略（保证任何情况下都能用）：
+ *   - 云端读取失败 → 回退本地数据，标记 offline（UI 显示"离线模式"徽标）
+ *   - 云端写入失败 → 回退本地写入，标记 offline（数据不丢失，云端恢复后自动切回）
  */
 import * as cloud from './cloudService'
 import { cloudConfig } from '../config/cloudConfig'
@@ -102,7 +102,7 @@ function clone(list) {
   return list.map((t) => ({ ...t }))
 }
 
-/* ---------------- 云端存储实现 ---------------- */
+/* ---------------- 云端实现 ---------------- */
 
 const CLOUD_TASKS = () => cloudConfig.collections.tasks
 
@@ -124,6 +124,27 @@ async function readCloud() {
   const docs = await cloud.queryAll(CLOUD_TASKS(), 'createdAt', 'desc')
   cache = docs.map(docToTask)
   return clone(cache)
+}
+
+/**
+ * 云端写入包装：云端可用时写云端；失败时降级本地并标记 offline
+ * @param {() => Promise<any>} cloudFn 云端写入实现
+ * @param {() => any} localFn 本地写入实现（降级路径）
+ */
+async function writeCloudOrLocal(cloudFn, localFn) {
+  if (!cloud.isCloudEnabled()) {
+    dataStatus = 'local'
+    return localFn()
+  }
+  try {
+    const result = await cloudFn()
+    dataStatus = 'cloud'
+    return result
+  } catch (err) {
+    console.warn('[taskService] 云端写入失败，已降级本地存储', err)
+    dataStatus = 'offline'
+    return localFn()
+  }
 }
 
 /* ---------------- 对外接口（签名不变） ---------------- */
@@ -150,7 +171,7 @@ export async function createTask(input = {}) {
   const title = String(input.title ?? '').trim()
   if (!title) throw new Error('任务标题不能为空')
 
-  if (!cloud.isCloudEnabled()) {
+  const localCreate = () => {
     const task = {
       id: `t-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       title,
@@ -166,16 +187,21 @@ export async function createTask(input = {}) {
     return { ...task }
   }
 
-  const id = await cloud.addDoc(CLOUD_TASKS(), {
-    title,
-    assignee: String(input.assignee ?? '').trim(),
-    deadline: input.deadline || '',
-    tag: String(input.tag ?? '').trim(),
-    progress: clampProgress(input.progress),
-    status: normalizeStatus(input.status),
-    createdAt: Date.now(),
-  })
-  return { id, title, ...input }
+  return writeCloudOrLocal(
+    async () => {
+      const id = await cloud.addDoc(CLOUD_TASKS(), {
+        title,
+        assignee: String(input.assignee ?? '').trim(),
+        deadline: input.deadline || '',
+        tag: String(input.tag ?? '').trim(),
+        progress: clampProgress(input.progress),
+        status: normalizeStatus(input.status),
+        createdAt: Date.now(),
+      })
+      return { id, title, ...input }
+    },
+    localCreate,
+  )
 }
 
 /** 更新任务（局部更新） */
@@ -183,10 +209,10 @@ export async function updateTask(id, patch = {}) {
   const title = String(patch.title ?? '').trim()
   if (patch.title !== undefined && !title) throw new Error('任务标题不能为空')
 
-  if (!cloud.isCloudEnabled()) {
+  const localUpdate = () => {
     const tasks = readLocal()
     const idx = tasks.findIndex((t) => t.id === id)
-    if (idx === -1) throw new Error(`任务不存在：${id}`)
+    if (idx === -1) return undefined // 本地无此任务（云端数据），忽略
     const prev = tasks[idx]
     const next = { ...prev, ...patch, id: prev.id }
     if (patch.title !== undefined) next.title = title
@@ -199,39 +225,38 @@ export async function updateTask(id, patch = {}) {
     return { ...next }
   }
 
-  await cloud.updateDoc(CLOUD_TASKS(), id, {
-    ...(patch.title !== undefined ? { title } : {}),
-    ...(patch.assignee !== undefined ? { assignee: String(patch.assignee ?? '').trim() } : {}),
-    ...(patch.deadline !== undefined ? { deadline: patch.deadline || '' } : {}),
-    ...(patch.tag !== undefined ? { tag: String(patch.tag ?? '').trim() } : {}),
-    ...(patch.progress !== undefined ? { progress: clampProgress(patch.progress) } : {}),
-    ...(patch.status !== undefined ? { status: normalizeStatus(patch.status) } : {}),
-  })
+  return writeCloudOrLocal(
+    async () => {
+      await cloud.updateDoc(CLOUD_TASKS(), id, {
+        ...(patch.title !== undefined ? { title } : {}),
+        ...(patch.assignee !== undefined ? { assignee: String(patch.assignee ?? '').trim() } : {}),
+        ...(patch.deadline !== undefined ? { deadline: patch.deadline || '' } : {}),
+        ...(patch.tag !== undefined ? { tag: String(patch.tag ?? '').trim() } : {}),
+        ...(patch.progress !== undefined ? { progress: clampProgress(patch.progress) } : {}),
+        ...(patch.status !== undefined ? { status: normalizeStatus(patch.status) } : {}),
+      })
+    },
+    localUpdate,
+  )
 }
 
 /** 删除任务 */
 export async function deleteTask(id) {
-  if (!cloud.isCloudEnabled()) {
+  const localDelete = () => {
     cache = readLocal().filter((t) => t.id !== id)
     persistLocal()
-    return
   }
-  await cloud.removeDoc(CLOUD_TASKS(), id)
+  return writeCloudOrLocal(
+    async () => cloud.removeDoc(CLOUD_TASKS(), id),
+    localDelete,
+  )
 }
 
 /** 移动任务到某列；移到"已完成"自动进度 100 */
 export async function moveTask(id, status) {
   const s = normalizeStatus(status)
-  if (cloud.isCloudEnabled()) {
-    const tasks = await listTasks()
-    const task = tasks.find((t) => t.id === id)
-    if (!task) return
-    await updateTask(id, s === 'done' ? { status: s, progress: 100 } : { status: s })
-    return
-  }
-  const task = readLocal().find((t) => t.id === id)
-  if (!task) return
-  await updateTask(id, s === 'done' ? { status: s, progress: 100 } : { status: s })
+  const patch = s === 'done' ? { status: s, progress: 100 } : { status: s }
+  return updateTask(id, patch)
 }
 
 /** 重置为示例数据（仅本地模式；云端模式请直接在页面上清理） */

@@ -6,10 +6,13 @@
  *       填入后自动切换云端共享模式（任务 / 值班表 / 反馈）。
  *
  * 获取方式：腾讯云控制台 → 搜索"云开发 CloudBase" → 创建环境（免费体验环境）→
- *          环境列表中的"环境 ID"一栏。
+ *          环境列表中的"环境 ID"一栏。详细步骤见 docs/CLOUDBASE-GUIDE.md
+ *
+ * 构建时可用环境变量覆盖（例如 CI 测试本地模式）：
+ *   VITE_CLOUDBASE_ENV_ID= npm run build
  */
 export const cloudConfig = {
-  envId: '',
+  envId: import.meta.env.VITE_CLOUDBASE_ENV_ID || 'qlu-mech-media-d1gtbtg87209c8a39',
   collections: {
     tasks: 'tasks',
     roster: 'roster',
