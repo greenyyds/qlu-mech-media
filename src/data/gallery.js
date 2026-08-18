@@ -11,13 +11,13 @@ export const gallerySlides = [
   {
     src: gallery1,
     title: '机械工程学部 · 活动风采',
-    date: '2026-08-18',
+    date: '2025-10-9',
     alt: '机械工程学部活动风采照片（一）',
   },
   {
     src: gallery2,
     title: '机械工程学部 · 活动风采',
-    date: '2026-08-18',
+    date: '2024-5-12',
     alt: '机械工程学部活动风采照片（二）',
   },
   {
