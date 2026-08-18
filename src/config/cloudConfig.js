@@ -12,7 +12,7 @@
  *   VITE_CLOUDBASE_ENV_ID= npm run build
  */
 export const cloudConfig = {
-  envId: import.meta.env.VITE_CLOUDBASE_ENV_ID || 'qlu-mech-media-d1gtbtg87209c8a39',
+  envId: import.meta.env.VITE_CLOUDBASE_ENV_ID || 'qlu-mech-media-d9gqzu1a9ecebc41b',
   collections: {
     tasks: 'tasks',
     roster: 'roster',
