@@ -104,6 +104,19 @@ tcb logout                                     # 用完即清理
 
 **沉淀**：`docs/CLOUDBASE-SETUP.md` 已更新正确格式与 CLI 方式；API 密钥坚持"用完即删"原则（本次已轮换 3 次密钥）。
 
+## v3.3.0 — AI 模型升级（glm-4-flash → glm-4.5-flash）
+
+**变更**
+- 新闻工具模型升级：`glm-4-flash` → **`glm-4.5-flash`**（官方免费模型，代际更新，文字性能更优）
+- 实测依据：同一提示词对比 3 个免费模型——
+  - `glm-4.5-flash`：**3/3 稳定成功、JSON 格式合规、无限流** ← 选定（官方免费文档：docs.bigmodel.cn/cn/guide/models/free/glm-4.5-flash）
+  - `glm-4.7-flash`：免费但**访问量过大频繁限流（429）**、篇幅遵循度差（329/568 字 vs 要求 600-800），待缓解后可切换
+  - `glm-4-flash`（旧）：稳定但代际旧
+- 配置注释更新：含模型选择说明与切换方式；`scripts/compare-glm-models.mjs` 保留为模型对比工具
+
+**已知限制**
+- 本次改动受沙箱子进程限制（esbuild spawn EPERM），本地构建/冒烟测试未能执行；模型可用性已通过 Node 直连 API 实测（3/3），线上由 GitHub Actions 云端构建部署验证
+
 ---
 
 ## 版本速查
