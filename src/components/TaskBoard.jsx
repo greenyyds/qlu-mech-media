@@ -8,29 +8,28 @@ import SectionHeading from './SectionHeading'
 import TaskColumn from './TaskColumn'
 import TaskModal from './TaskModal'
 import DataStatusBadge from './DataStatusBadge'
+import { useDataStatus } from '../hooks/useDataStatus'
 
 /**
  * 任务规划模块：本周重点任务
  * - 看板三列：待办 / 进行中 / 已完成
  * - 支持添加、编辑、删除、跨列拖拽
  * - 数据统一走 services/taskService.js（云端共享 / 本地两种模式）
+ * - 云端恢复后（cloud-recovered 事件）自动刷新数据并切回共享模式
  */
 export default function TaskBoard() {
   const [tasks, setTasks] = useState(null) // null = 加载中
   const [draggingId, setDraggingId] = useState(null)
   const [overStatus, setOverStatus] = useState(null)
   const [modal, setModal] = useState(null) // null | { mode:'create' } | { mode:'edit', task }
-  const [dataStatus, setDataStatus] = useState(taskService.getDataStatus())
+  const dataStatus = useDataStatus()
 
   const weekRange = getWeekRange()
 
   useEffect(() => {
     let alive = true
     taskService.listTasks().then((list) => {
-      if (alive) {
-        setTasks(list)
-        setDataStatus(taskService.getDataStatus())
-      }
+      if (alive) setTasks(list)
     })
     return () => {
       alive = false
@@ -39,8 +38,14 @@ export default function TaskBoard() {
 
   const refresh = async () => {
     setTasks(await taskService.listTasks())
-    setDataStatus(taskService.getDataStatus())
   }
+
+  // 云端自动恢复后刷新数据
+  useEffect(() => {
+    const onRecovered = () => refresh()
+    window.addEventListener('cloud-recovered', onRecovered)
+    return () => window.removeEventListener('cloud-recovered', onRecovered)
+  }, [])
 
   const handleCreate = async (data) => {
     await taskService.createTask(data)

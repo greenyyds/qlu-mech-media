@@ -127,9 +127,22 @@ try {
   })
   check('点击「上一张」后回到第 1 张', firstActive)
 
-  console.log('\n[4] 预置任务')
-  for (const t of ['秋季纳新宣传推文', '学代会新闻稿初稿', '公众号栏目改版方案']) {
-    check(`预置任务「${t}」已渲染`, await textExists(page, t))
+  console.log('\n[4] 任务看板（按数据模式断言）')
+  const mode = await page.evaluate(() => {
+    const el = [...document.querySelectorAll('span[title*="云端"], span[title*="本机浏览器"], span[title*="离线"]')][0]
+    return el ? el.textContent.trim() : ''
+  })
+  if (mode.includes('云端共享')) {
+    // 云端模式：数据为共享数据（无预置任务），验证看板结构与空态
+    check('云端模式：三列看板正常渲染', await page.evaluate(() => {
+      const cols = document.querySelectorAll('[aria-label$="列"]')
+      return cols.length >= 3 && cols[0]?.getAttribute('aria-label')?.includes('待办')
+    }))
+  } else {
+    // 本地/离线模式：预置任务存在
+    for (const t of ['秋季纳新宣传推文', '学代会新闻稿初稿', '公众号栏目改版方案']) {
+      check(`预置任务「${t}」已渲染`, await textExists(page, t))
+    }
   }
 
   console.log('\n[5] 添加任务')

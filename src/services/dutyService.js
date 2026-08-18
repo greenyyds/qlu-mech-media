@@ -17,10 +17,9 @@ const STORAGE_KEY = 'qlu-mech-media:roster:v1'
 const MAX_MEMBERS_PER_DAY = 4
 
 let cache = null
-let dataStatus = cloud.isCloudEnabled() ? 'cloud' : 'local'
 
 export function getDataStatus() {
-  return dataStatus
+  return cloud.getDataStatus()
 }
 
 /* ---------------- 本地实现 ---------------- */
@@ -96,17 +95,17 @@ async function ensureCloudDoc() {
 /** 获取本周值班安排（云端无数据时返回默认示例，不落库） */
 export async function listWeek() {
   if (!cloud.isCloudEnabled()) {
-    dataStatus = 'local'
+    cloud.setDataStatus('local')
     return clone(readLocal())
   }
   try {
     const doc = await getCloudDoc()
-    dataStatus = 'cloud'
+    cloud.setDataStatus('cloud')
     if (doc && doc.days && doc.days.length === 7) return clone(doc.days)
     return buildRosterWeek()
   } catch (err) {
     console.warn('[dutyService] 云端读取失败，降级本地数据', err)
-    dataStatus = 'offline'
+    cloud.setDataStatus('offline')
     return clone(readLocal())
   }
 }
@@ -124,7 +123,7 @@ export async function updateDay(iso, members) {
   }
 
   if (!cloud.isCloudEnabled()) {
-    dataStatus = 'local'
+    cloud.setDataStatus('local')
     return localUpdate()
   }
 
@@ -135,10 +134,10 @@ export async function updateDay(iso, members) {
     if (idx === -1) throw new Error(`日期不存在：${iso}`)
     days[idx] = { ...days[idx], members: cleaned }
     await cloud.updateDoc(cloudConfig.collections.roster, doc.id, { days })
-    dataStatus = 'cloud'
+    cloud.setDataStatus('cloud')
   } catch (err) {
     console.warn('[dutyService] 云端写入失败，已降级本地存储', err)
-    dataStatus = 'offline'
+    cloud.setDataStatus('offline')
     localUpdate()
   }
 }
@@ -155,10 +154,10 @@ export async function resetToDefault() {
     if (doc) {
       await cloud.removeDoc(cloudConfig.collections.roster, doc.id)
     }
-    dataStatus = 'cloud'
+    cloud.setDataStatus('cloud')
   } catch (err) {
     console.warn('[dutyService] 云端重置失败，降级本地重置', err)
-    dataStatus = 'offline'
+    cloud.setDataStatus('offline')
   }
   // 无论云端是否成功，重置本地缓存，避免降级路径读到旧数据
   cache = buildRosterWeek()

@@ -13,6 +13,8 @@ import * as feedbackService from '../services/feedbackService'
 import { formatRelativeTime, sha256 } from '../utils/date'
 import { navigate } from '../utils/router'
 import Reveal from './Reveal'
+import DataStatusBadge from './DataStatusBadge'
+import { useDataStatus } from '../hooks/useDataStatus'
 
 const PASS_KEY = 'qlu-mech-media:feedback-pass:v1'
 
@@ -322,6 +324,7 @@ function SubmitSection() {
 function FeedbackList({ refreshKey }) {
   const [items, setItems] = useState(null) // null = 加载中
   const [filter, setFilter] = useState('all')
+  const dataStatus = useDataStatus()
 
   const load = useCallback(async () => {
     setItems(await feedbackService.listFeedbacks())
@@ -330,6 +333,13 @@ function FeedbackList({ refreshKey }) {
   useEffect(() => {
     load()
   }, [load, refreshKey])
+
+  // 云端自动恢复后刷新列表
+  useEffect(() => {
+    const onRecovered = () => load()
+    window.addEventListener('cloud-recovered', onRecovered)
+    return () => window.removeEventListener('cloud-recovered', onRecovered)
+  }, [load])
 
   const shown = items
     ? items.filter((f) => filter === 'all' || f.category === filter)
@@ -344,7 +354,9 @@ function FeedbackList({ refreshKey }) {
             全部反馈
             {items && <span className="text-[12px] font-normal text-tertiary">（{items.length} 条）</span>}
           </h2>
-          <div className="flex items-center gap-1.5" role="tablist" aria-label="反馈分类筛选">
+          <div className="flex items-center gap-2">
+            <DataStatusBadge status={dataStatus} />
+            <div className="flex items-center gap-1.5" role="tablist" aria-label="反馈分类筛选">
             {[
               { id: 'all', label: '全部' },
               { id: 'tech', label: '技术/设计' },
@@ -365,6 +377,7 @@ function FeedbackList({ refreshKey }) {
                 {f.label}
               </button>
             ))}
+            </div>
           </div>
         </div>
 

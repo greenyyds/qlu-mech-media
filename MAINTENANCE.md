@@ -75,7 +75,7 @@ git push origin main
 | AI 生成报错 | 1) Key 失效/额度耗尽；2) 网络问题 | 换 `src/config/aiConfig.js` 里的 Key；重试 |
 | 生成内容乱编细节 | 提示词有事实纪律，但 AI 仍可能出错 | 人工核对后发布；可在 `newsService.js` 加强提示词 |
 | 数据不共享（显示"本机数据"） | CloudBase 未配置或 envId 为空 | 检查 `src/config/cloudConfig.js` 的 envId；见 README 第三节接入步骤 |
-| 显示"离线模式" | 云端网络失败 | 检查网络；确认 CloudBase 环境未欠费/未停用；服务恢复自动回云端 |
+| 显示"离线模式" | 云端暂时不可用（网络/额度/环境问题） | **无需手动操作**：系统每 30 秒自动探测，云端恢复后自动切回"云端共享"并刷新数据；若长时间不恢复，检查网络、CloudBase 环境状态与免费额度 |
 | 云端数据被改乱/误删 | 公开读写模式（无登录系统） | 页脚"导出数据备份"定期备份；重要数据建议每周导出一份 |
 | CloudBase 免费额度耗尽 | 资源点用超 | 控制台查看用量；可清空 envId 降级本地模式，或升级付费 |
 | 反馈页无法进入（提示密码） | `feedbackConfig.protected` 被置 true | 输入密码；或把 protected 改回 false 重新部署 |

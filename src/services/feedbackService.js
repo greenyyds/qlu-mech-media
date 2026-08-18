@@ -15,10 +15,9 @@ const STORAGE_KEY = 'qlu-mech-media:feedback:v1'
 const MAX_CONTENT = 500
 export const FEEDBACK_CATEGORIES = ['tech', 'daily']
 
-let dataStatus = cloud.isCloudEnabled() ? 'cloud' : 'local'
 
 export function getDataStatus() {
-  return dataStatus
+  return cloud.getDataStatus()
 }
 
 /* ---------------- 本地实现 ---------------- */
@@ -59,12 +58,12 @@ function validateFeedback({ category, name, content }) {
 /** 全部反馈（按时间倒序） */
 export async function listFeedbacks() {
   if (!cloud.isCloudEnabled()) {
-    dataStatus = 'local'
+    cloud.setDataStatus('local')
     return readLocal()
   }
   try {
     const docs = await cloud.queryAll(cloudConfig.collections.feedback, 'createdAt', 'desc')
-    dataStatus = 'cloud'
+    cloud.setDataStatus('cloud')
     return docs.map((d) => ({
       id: d._id,
       category: d.category,
@@ -74,7 +73,7 @@ export async function listFeedbacks() {
     }))
   } catch (err) {
     console.warn('[feedbackService] 云端读取失败，降级本地数据', err)
-    dataStatus = 'offline'
+    cloud.setDataStatus('offline')
     return readLocal()
   }
 }
@@ -92,17 +91,17 @@ export async function createFeedback(input = {}) {
   }
 
   if (!cloud.isCloudEnabled()) {
-    dataStatus = 'local'
+    cloud.setDataStatus('local')
     return localCreate()
   }
 
   try {
     const id = await cloud.addDoc(cloudConfig.collections.feedback, feedback)
-    dataStatus = 'cloud'
+    cloud.setDataStatus('cloud')
     return { id, ...feedback }
   } catch (err) {
     console.warn('[feedbackService] 云端写入失败，已降级本地存储', err)
-    dataStatus = 'offline'
+    cloud.setDataStatus('offline')
     return localCreate()
   }
 }

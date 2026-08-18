@@ -5,6 +5,7 @@ import { getWeekRange, toISODate } from '../utils/date'
 import Reveal from './Reveal'
 import SectionHeading from './SectionHeading'
 import DataStatusBadge from './DataStatusBadge'
+import { useDataStatus } from '../hooks/useDataStatus'
 
 /**
  * 本周值班表（可编辑）
@@ -14,16 +15,22 @@ import DataStatusBadge from './DataStatusBadge'
 export default function DutyRoster() {
   const [days, setDays] = useState(null) // null = 加载中
   const [editing, setEditing] = useState(false)
-  const [dataStatus, setDataStatus] = useState(dutyService.getDataStatus())
+  const dataStatus = useDataStatus()
   const todayISO = toISODate(new Date())
 
   const refresh = useCallback(async () => {
     setDays(await dutyService.listWeek())
-    setDataStatus(dutyService.getDataStatus())
   }, [])
 
   useEffect(() => {
     refresh()
+  }, [refresh])
+
+  // 云端自动恢复后刷新数据
+  useEffect(() => {
+    const onRecovered = () => refresh()
+    window.addEventListener('cloud-recovered', onRecovered)
+    return () => window.removeEventListener('cloud-recovered', onRecovered)
   }, [refresh])
 
   const addMember = async (iso, name) => {

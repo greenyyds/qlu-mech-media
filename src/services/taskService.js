@@ -20,10 +20,9 @@ const STATUSES = ['todo', 'in_progress', 'done']
 /** 内存缓存（本地模式）；云端模式为最近一次全量读取 */
 let cache = null
 /** 当前数据状态：cloud | local | offline（供 UI 展示） */
-let dataStatus = cloud.isCloudEnabled() ? 'cloud' : 'local'
 
 export function getDataStatus() {
-  return dataStatus
+  return cloud.getDataStatus()
 }
 
 /* ---------------- 内部工具函数 ---------------- */
@@ -133,16 +132,16 @@ async function readCloud() {
  */
 async function writeCloudOrLocal(cloudFn, localFn) {
   if (!cloud.isCloudEnabled()) {
-    dataStatus = 'local'
+    cloud.setDataStatus('local')
     return localFn()
   }
   try {
     const result = await cloudFn()
-    dataStatus = 'cloud'
+    cloud.setDataStatus('cloud')
     return result
   } catch (err) {
     console.warn('[taskService] 云端写入失败，已降级本地存储', err)
-    dataStatus = 'offline'
+    cloud.setDataStatus('offline')
     return localFn()
   }
 }
@@ -152,16 +151,16 @@ async function writeCloudOrLocal(cloudFn, localFn) {
 /** 获取全部任务（云端优先，失败降级本地并标记 offline） */
 export async function listTasks() {
   if (!cloud.isCloudEnabled()) {
-    dataStatus = 'local'
+    cloud.setDataStatus('local')
     return clone(readLocal())
   }
   try {
     const tasks = await readCloud()
-    dataStatus = 'cloud'
+    cloud.setDataStatus('cloud')
     return tasks
   } catch (err) {
     console.warn('[taskService] 云端读取失败，降级本地数据', err)
-    dataStatus = 'offline'
+    cloud.setDataStatus('offline')
     return clone(readLocal())
   }
 }

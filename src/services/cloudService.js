@@ -13,6 +13,35 @@ import { cloudConfig } from '../config/cloudConfig'
 let app = null
 let sdkPromise = null
 
+/* ---------------- 数据状态管理（云端/本地/离线 + 订阅） ---------------- */
+
+let dataStatus = isCloudEnabled() ? 'cloud' : 'local'
+const listeners = new Set()
+
+/** 当前数据状态：'cloud' | 'local' | 'offline' */
+export function getDataStatus() {
+  return dataStatus
+}
+
+/** 更新数据状态并通知订阅者（仅状态变化时触发） */
+export function setDataStatus(next) {
+  if (next === dataStatus) return
+  dataStatus = next
+  listeners.forEach((fn) => {
+    try {
+      fn(next)
+    } catch (err) {
+      console.warn('[cloudService] 状态订阅回调异常', err)
+    }
+  })
+}
+
+/** 订阅数据状态变化，返回取消订阅函数 */
+export function onDataStatusChange(fn) {
+  listeners.add(fn)
+  return () => listeners.delete(fn)
+}
+
 /** 是否已配置云端环境 */
 export function isCloudEnabled() {
   return Boolean(cloudConfig.envId)
