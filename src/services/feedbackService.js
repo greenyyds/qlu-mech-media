@@ -73,6 +73,7 @@ export async function listFeedbacks() {
     }))
   } catch (err) {
     console.warn('[feedbackService] 云端读取失败，降级本地数据', err)
+    cloud.setLastCloudError(err)
     cloud.setDataStatus('offline')
     return readLocal()
   }
@@ -101,6 +102,7 @@ export async function createFeedback(input = {}) {
     return { id, ...feedback }
   } catch (err) {
     console.warn('[feedbackService] 云端写入失败，已降级本地存储', err)
+    cloud.setLastCloudError(err)
     cloud.setDataStatus('offline')
     return localCreate()
   }

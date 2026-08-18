@@ -2,10 +2,10 @@
  * 风采展示轮播配置（唯一维护入口）
  * 换图：替换 src/assets/gallery/ 下的图片并同步修改此文件的 src 与文案即可
  */
-import gallery1 from '../assets/gallery/gallery-1.jpg'
-import gallery2 from '../assets/gallery/gallery-2.jpg'
-import gallery3 from '../assets/gallery/gallery-3.jpg'
-import gallery4 from '../assets/gallery/gallery-4.jpg'
+import gallery1 from '../assets/gallery/gallery-1.webp'
+import gallery2 from '../assets/gallery/gallery-2.webp'
+import gallery3 from '../assets/gallery/gallery-3.webp'
+import gallery4 from '../assets/gallery/gallery-4.webp'
 
 export const gallerySlides = [
   {

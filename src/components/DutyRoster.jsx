@@ -33,26 +33,47 @@ export default function DutyRoster() {
     return () => window.removeEventListener('cloud-recovered', onRecovered)
   }, [refresh])
 
+  // ---- 乐观更新：UI 立即响应，云端同步在后台，失败自动回滚 ----
+
   const addMember = async (iso, name) => {
     if (!name.trim()) return
     const day = days.find((d) => d.iso === iso)
     if (!day || day.members.length >= 4) return
-    await dutyService.updateDay(iso, [...day.members, name.trim()])
-    await refresh()
+    const nextMembers = [...day.members, name.trim()]
+    // 立即更新 UI（乐观）
+    setDays((list) =>
+      (list || []).map((d) => (d.iso === iso ? { ...d, members: nextMembers } : d)),
+    )
+    try {
+      await dutyService.updateDay(iso, nextMembers)
+    } catch (err) {
+      console.warn('[DutyRoster] 添加成员失败，已回滚', err)
+      await refresh()
+    }
   }
 
   const removeMember = async (iso, name) => {
     const day = days.find((d) => d.iso === iso)
     if (!day) return
-    await dutyService.updateDay(
-      iso,
-      day.members.filter((m) => m !== name),
+    const nextMembers = day.members.filter((m) => m !== name)
+    // 立即更新 UI（乐观）
+    setDays((list) =>
+      (list || []).map((d) => (d.iso === iso ? { ...d, members: nextMembers } : d)),
     )
-    await refresh()
+    try {
+      await dutyService.updateDay(iso, nextMembers)
+    } catch (err) {
+      console.warn('[DutyRoster] 移除成员失败，已回滚', err)
+      await refresh()
+    }
   }
 
   const reset = async () => {
-    await dutyService.resetToDefault()
+    try {
+      await dutyService.resetToDefault()
+    } catch (err) {
+      console.warn('[DutyRoster] 重置失败', err)
+    }
     await refresh()
   }
 

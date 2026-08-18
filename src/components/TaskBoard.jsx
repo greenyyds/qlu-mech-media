@@ -47,19 +47,56 @@ export default function TaskBoard() {
     return () => window.removeEventListener('cloud-recovered', onRecovered)
   }, [])
 
+  // ---- 乐观更新：UI 立即响应，云端同步在后台，失败自动回滚 ----
+
   const handleCreate = async (data) => {
-    await taskService.createTask(data)
-    await refresh()
+    // 立即插入临时任务（乐观）
+    const temp = {
+      id: `temp-${Date.now()}`,
+      title: data.title,
+      assignee: data.assignee || '',
+      deadline: data.deadline || '',
+      tag: data.tag || '',
+      progress: Number(data.progress) || 0,
+      status: data.status || 'todo',
+      createdAt: Date.now(),
+    }
+    setTasks((list) => [...(list || []), temp])
+    try {
+      await taskService.createTask(data)
+      await refresh() // 后台同步真实数据（拿到云端 id 与排序）
+    } catch (err) {
+      console.warn('[TaskBoard] 创建任务失败，已回滚', err)
+      await refresh()
+    }
   }
 
   const handleUpdate = async (id, data) => {
-    await taskService.updateTask(id, data)
-    await refresh()
+    // 立即更新本地卡片（乐观）
+    setTasks((list) =>
+      (list || []).map((t) =>
+        t.id === id ? { ...t, ...data, progress: Number(data.progress) ?? t.progress } : t,
+      ),
+    )
+    try {
+      await taskService.updateTask(id, data)
+    } catch (err) {
+      console.warn('[TaskBoard] 更新任务失败，已回滚', err)
+      await refresh()
+    }
   }
 
   const handleDelete = async (id) => {
-    await taskService.deleteTask(id)
-    await refresh()
+    // 立即移除（乐观）
+    const prev = tasks
+    setTasks((list) => (list || []).filter((t) => t.id !== id))
+    try {
+      await taskService.deleteTask(id)
+    } catch (err) {
+      console.warn('[TaskBoard] 删除任务失败，已回滚', err)
+      setTasks(prev)
+      await refresh()
+    }
   }
 
   const handleDrop = async (status) => {
@@ -67,8 +104,15 @@ export default function TaskBoard() {
     setDraggingId(null)
     setOverStatus(null)
     if (!id) return
-    await taskService.moveTask(id, status)
-    await refresh()
+    // 立即移动卡片（乐观）
+    const patch = status === 'done' ? { status, progress: 100 } : { status }
+    setTasks((list) => (list || []).map((t) => (t.id === id ? { ...t, ...patch } : t)))
+    try {
+      await taskService.moveTask(id, status)
+    } catch (err) {
+      console.warn('[TaskBoard] 移动任务失败，已回滚', err)
+      await refresh()
+    }
   }
 
   return (

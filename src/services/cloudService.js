@@ -42,6 +42,32 @@ export function onDataStatusChange(fn) {
   return () => listeners.delete(fn)
 }
 
+/* ---------------- 云端错误诊断（离线原因提示） ---------------- */
+
+let lastCloudError = null
+
+/** 记录最近一次云端错误（供 UI 展示离线原因） */
+export function setLastCloudError(err) {
+  lastCloudError = err
+}
+
+/** 把错误转成人话提示（离线横幅展示） */
+export function getCloudErrorHint() {
+  const msg = String(
+    lastCloudError?.message || lastCloudError?.msg || lastCloudError || '',
+  )
+  if (/匿名登录|AnonymousLogin|登录方式未开启/.test(msg)) {
+    return '云端未开启匿名登录（需在控制台配置）'
+  }
+  if (/collection not exists|集合不存在|Env not found/.test(msg)) {
+    return '云端数据集合缺失（需在控制台创建）'
+  }
+  if (/CORS|Access to fetch|安全域名|tcloudbasegateway/i.test(msg) || /Failed to fetch/i.test(msg)) {
+    return '网络不通或 Web 安全域名未配置'
+  }
+  return '网络暂时不可用'
+}
+
 /** 是否已配置云端环境 */
 export function isCloudEnabled() {
   return Boolean(cloudConfig.envId)

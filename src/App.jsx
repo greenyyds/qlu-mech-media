@@ -10,6 +10,7 @@ import DutyRoster from './components/DutyRoster'
 import Footer from './components/Footer'
 import FeedbackPage from './components/FeedbackPage'
 import PwaUpdateToast from './components/PwaUpdateToast'
+import OfflineNotice from './components/OfflineNotice'
 import { useHashRoute } from './utils/router'
 import { useDataStatus } from './hooks/useDataStatus'
 import * as taskService from './services/taskService'
@@ -57,6 +58,7 @@ export default function App() {
       </a>
 
       <NoticeBanner />
+      <OfflineNotice visible={dataStatus === 'offline'} />
       <Navbar />
 
       {route === '/feedback' ? (

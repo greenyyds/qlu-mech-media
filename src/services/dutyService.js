@@ -105,6 +105,7 @@ export async function listWeek() {
     return buildRosterWeek()
   } catch (err) {
     console.warn('[dutyService] 云端读取失败，降级本地数据', err)
+    cloud.setLastCloudError(err)
     cloud.setDataStatus('offline')
     return clone(readLocal())
   }
@@ -137,6 +138,7 @@ export async function updateDay(iso, members) {
     cloud.setDataStatus('cloud')
   } catch (err) {
     console.warn('[dutyService] 云端写入失败，已降级本地存储', err)
+    cloud.setLastCloudError(err)
     cloud.setDataStatus('offline')
     localUpdate()
   }
