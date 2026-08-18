@@ -99,20 +99,24 @@ npm run ai:test    # AI 真实生成端到端测试（消耗少量免费额度�
 
 ```
 ├── index.html / vite.config.js / .github/workflows/deploy.yml
-├── public/                        # favicon + PWA 图标
-├── scripts/                       # smoke-test / ai-e2e-test / capture-screens / package-deploy
+├── README.md                    # ★ 功能与架构总览（先读这个）
+├── MAINTENANCE.md               # ★ 维护手册（改什么→改哪、流程、故障排查）
+├── CHANGELOG.md                 # ★ 版本历史与踩坑记录
+├── docs/
+│   ├── ARCHITECTURE.md          # ★ 设计决策依据（为什么这么设计）
+│   ├── ONBOARDING.md            # ★ 新人/新 AI 15 分钟上手指南
+│   ├── DEPLOY-GITHUB-PAGES.md   # 上线操作卡
+│   ├── CLOUDBASE-GUIDE.md       # CloudBase 环境创建
+│   ├── CLOUDBASE-SETUP.md       # CloudBase 环境配置
+│   └── screenshots/             # 各版本截图
+├── public/                      # favicon + PWA 图标
+├── scripts/                     # smoke / ai-e2e / cloud-share / capture / package-deploy / configure-cloudbase
 └── src/
-    ├── config/
-    │   ├── aiConfig.js            # AI 模型与 Key
-    │   ├── cloudConfig.js         # ★ CloudBase 环境开关（envId）
-    │   └── feedbackConfig.js      # 反馈页密码预留
-    ├── data/                      # links / newsToolConfig / roster / taskConfig / gallery
-    ├── services/                  # 数据层（双模式：云端优先 + 本地降级）
-    │   ├── cloudService.js        # CloudBase 封装（SDK 动态加载）
-    │   ├── taskService.js / dutyService.js / feedbackService.js / backupService.js
-    │   └── newsService.js         # AI 流式生成
-    ├── hooks/ utils/              # useTheme / useReveal / hash 路由 / 日期工具
-    └── components/                # 14 个组件（含 Gallery 轮播、FeedbackPage、DataStatusBadge）
+    ├── config/                  # aiConfig（AI Key）/ cloudConfig（云端开关）/ feedbackConfig（密码预留）
+    ├── data/                    # links / newsToolConfig / roster / taskConfig / gallery
+    ├── services/                # 数据层（双模式：云端优先 + 本地降级）
+    ├── hooks/ utils/            # useTheme / useReveal / useDataStatus / hash 路由 / 日期
+    └── components/              # 14 个组件
 ```
 
 ## 六、部署

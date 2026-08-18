@@ -83,13 +83,17 @@ git push origin main
 
 ## 六、交给新 AI / 新同学接手时（重要）
 
+**完整上手指南见 `docs/ONBOARDING.md`**（15 分钟接管：读 4 份文档 → 环境清单 → 本地开发 → 标准迭代流程 → 常见坑 → 练习任务）。
+
 新对话/新 AI 快速进入状态，只需让它按顺序读：
 
 1. **`README.md`** —— 功能清单、架构、数据层（双模式）、部署
-2. **`MAINTENANCE.md`（本文件）** —— 维护地图、流程、故障排查
-3. 动手前读：`src/config/cloudConfig.js`、`src/config/aiConfig.js`、`src/config/feedbackConfig.js`、`src/services/taskService.js`、`vite.config.js`
+2. **`docs/ARCHITECTURE.md`** —— 设计决策依据、数据模型、测试体系
+3. **`CHANGELOG.md`** —— 版本历史与踩坑记录
+4. **`MAINTENANCE.md`（本文件）** —— 维护地图、流程、故障排查
+5. 动手前读：`src/config/cloudConfig.js`、`src/config/aiConfig.js`、`src/config/feedbackConfig.js`、`src/services/taskService.js`、`vite.config.js`
 
-> 对本文件或 README 的任何重大变更（新模块、新流程），请同步更新文档——这是"长期维护不依赖记忆"的根本保证。
+> 对本文件、README、CHANGELOG 的任何重大变更（新模块、新流程），请同步更新文档——这是"长期维护不依赖记忆"的根本保证。
 
 ## 七、换电脑 / 电脑坏了怎么办
 
