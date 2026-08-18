@@ -18,13 +18,22 @@
 1. 环境左侧菜单（或搜索）→「**身份认证**」（旧版叫"登录授权"）
 2. 找到「**匿名登录**」→ 打开开关
 
-## 第 2 步：配置 Web 安全域名（必做，否则提示"非法来源"）
+## 第 2 步：配置 Web 安全域名（必做，否则 CORS 拦截报离线）
 
-1. 环境左侧菜单（或搜索）→「**Web 安全域名**」（可能在"安全"分组下）
-2. 添加：
-   - `https://greenyyds.github.io`（正式站）
-   - `http://localhost:5173`（本地调试）
-3. 保存
+**格式要求：域名不带 `http://` 或 `https://` 前缀**（如 `greenyyds.github.io`）。
+
+- 控制台方式：环境左侧菜单（或搜索）→「**Web 安全域名**」→ 添加 `greenyyds.github.io` → 保存
+- CLI 方式（需 API 密钥）：
+  ```bash
+  npm i -g @cloudbase/cli
+  tcb login --apiKeyId <SecretId> --apiKey <SecretKey>
+  tcb cors add greenyyds.github.io -e <envId>     # 交互确认输入 y
+  tcb cors list -e <envId>                          # 验证
+  tcb logout
+  ```
+
+> 排查经验：曾用 TCB SDK 的 CreateAuthDomain 添加（带 https:// 前缀）仍被 CORS 拦截；
+> 正确做法是 `tcb cors` 命令且**不带协议前缀**。添加后浏览器刷新页面（或等 30 秒自动恢复）即可。
 
 ## 第 3 步：创建 3 个集合（必做）
 
