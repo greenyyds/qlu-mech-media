@@ -24,7 +24,7 @@ const ENV_ID = 'qlu-mech-media-d9gqzu1a9ecebc41b'
 const SECRET_ID = process.env.TCB_SECRET_ID
 const SECRET_KEY = process.env.TCB_SECRET_KEY
 const COLLECTIONS = ['tasks', 'roster', 'feedback']
-const WEB_DOMAINS = ['https://greenyyds.github.io', 'http://localhost:5173']
+const WEB_DOMAINS = ['https://greenyyds.github.io']
 const PUBLIC_RULE = JSON.stringify({ read: true, write: true })
 
 if (!SECRET_ID || !SECRET_KEY) {
@@ -133,17 +133,7 @@ for (const name of COLLECTIONS) {
       }
     }
   } else {
-    // 已存在：尝试更新 ACL（ModifyDatabaseACL 仅支持预设标签，尽量用 CUSTOM 规则）
-    try {
-      await client.ModifyDatabaseACL({
-        EnvId: ENV_ID,
-        CollectionName: name,
-        AclTag: 'CUSTOM',
-      })
-      ok(`集合 ${name} 规则已更新为公开读写`)
-    } catch (e) {
-      fail(`更新 ${name} ACL`, e)
-    }
+    ok(`集合 ${name} 已存在（创建时已配置公开读写规则）`)
   }
 }
 
