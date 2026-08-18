@@ -3,12 +3,15 @@ import Navbar from './components/Navbar'
 import NoticeBanner from './components/NoticeBanner'
 import Hero from './components/Hero'
 import Gallery from './components/Gallery'
+import TutorialEntry from './components/TutorialEntry'
 import QuickLinks from './components/QuickLinks'
 import NewsTool from './components/NewsTool'
 import TaskBoard from './components/TaskBoard'
 import DutyRoster from './components/DutyRoster'
 import Footer from './components/Footer'
 import FeedbackPage from './components/FeedbackPage'
+import TutorialsPage from './components/TutorialsPage'
+import PhotographyTutorial from './components/PhotographyTutorial'
 import PwaUpdateToast from './components/PwaUpdateToast'
 import OfflineNotice from './components/OfflineNotice'
 import { useHashRoute } from './utils/router'
@@ -19,7 +22,7 @@ const RECOVERY_INTERVAL_MS = 30000 // 离线时每 30 秒探测一次云端
 
 /**
  * 应用入口
- * 路由约定：hash 以 "#/" 开头为二级页面（如 #/feedback），其余为主页锚点
+ * 路由约定：hash 以 "#/" 开头为二级页面（#/feedback、#/tutorials、#/tutorials/photography），其余为主页锚点
  */
 export default function App() {
   const route = useHashRoute()
@@ -63,10 +66,15 @@ export default function App() {
 
       {route === '/feedback' ? (
         <FeedbackPage />
+      ) : route === '/tutorials' ? (
+        <TutorialsPage />
+      ) : route === '/tutorials/photography' ? (
+        <PhotographyTutorial />
       ) : (
         <main id="main">
           <Hero />
           <Gallery />
+          <TutorialEntry />
           <QuickLinks />
           <NewsTool />
           <TaskBoard />

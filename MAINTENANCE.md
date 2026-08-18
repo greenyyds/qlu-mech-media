@@ -26,13 +26,16 @@
 | 公告横幅文字 | `src/components/NoticeBanner.jsx`（顶部 NOTICE_TEXT） | 可关闭，关闭状态在访问者本机 |
 | 值班表成员/排班（默认值） | `src/data/roster.js` | 云端模式下改的是 CloudBase 数据（页面上编辑）；此文件是"初始默认值" |
 | 风采展示照片/文案 | `src/data/gallery.js` + `src/assets/gallery/` | 换图：替换图片文件 + 改配置（标题/日期/alt） |
+| **教程内容/章节** | `src/data/tutorials.js` | 板块与章节配置；新增板块需同时加路由（App.jsx）与页面组件 |
+| **教程素材** | `素材/摄影教程/` + `scripts/convert-tutorial-assets.mjs` | 转 WebP 后放 `src/assets/tutorials/` |
 | 意见反馈页文案/分类 | `src/components/FeedbackPage.jsx`（CATEGORIES 数组） | 页面结构 |
 | 反馈页密码开关 | `src/config/feedbackConfig.js` | `protected: true` + 密码哈希后启用 |
-| 常用链接（增删改） | `src/data/links.js` | url 留空会显示"待配置"占位，不会产生死链接 |
+| 常用链接（增删改） | `src/data/links.js` | 含品牌色 tint；url 留空会显示"待配置"占位 |
 | 任务看板示例任务 | `src/services/taskService.js`（buildSeedTasks） | 仅本地模式首次打开生效 |
 | 新闻工具选项（增删） | `src/data/newsToolConfig.js` | 控件自动渲染，支持七种控件类型 |
-| AI 模型 / Key / 参数 | `src/config/aiConfig.js` | 换模型改 model/baseUrl；换 Key 改 apiKey |
+| **AI 模型模式/Key** | `src/config/aiConfig.js` | `aiModels` 增删模式（快速/深度），改 Key 改 apiKey |
 | AI 生成提示词规则 | `src/services/newsService.js`（buildSystemPrompt） | 事实纪律、篇幅、风格都在这里 |
+| **开关组件样式** | `src/components/Toggle.jsx` | 全站 switch 共用组件（v4 重构，勿改回 translate 方案） |
 | **云端开关（共享/本地）** | `src/config/cloudConfig.js` | `envId` 填写 = 云端共享；留空 = 本地模式 |
 | 配色 / 圆角 / 动效 | `src/index.css`（@theme 设计令牌） | 浅色/深色都走 CSS 变量 |
 | 导航菜单项 / 主题切换 | `src/components/Navbar.jsx` | NAV_LINKS 数组 |

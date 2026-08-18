@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { id: 'news', label: '新闻工具' },
   { id: 'tasks', label: '任务规划' },
   { id: 'roster', label: '值班表' },
+  { id: 'tutorials', label: '教程', href: '#/tutorials' },
   { id: 'feedback', label: '意见反馈', href: '#/feedback' },
   { id: 'about', label: '关于' },
 ]

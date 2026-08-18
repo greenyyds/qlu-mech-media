@@ -93,10 +93,9 @@ export const newsToolOptions = [
   },
 ]
 
-/** 工具启用状态：true = 已接入 AI（按钮可用） */
+/** 工具启用状态：true = 已接入 AI（按钮可用）；模型信息见 src/config/aiConfig.js 的 aiModels */
 export const newsToolStatus = {
   enabled: true,
-  modelLabel: 'GLM-4-Flash',
 }
 
 /** 生成一份选项默认值对象 */

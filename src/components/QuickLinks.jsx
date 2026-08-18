@@ -1,4 +1,4 @@
-import { ArrowUpRight, Building2, Clapperboard, Globe, MessageCircle, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Building2, Clapperboard, Globe, Image, MessageCircle, Newspaper, Sparkles } from 'lucide-react'
 import { linkGroups } from '../data/links'
 import Reveal from './Reveal'
 import SectionHeading from './SectionHeading'
@@ -10,6 +10,8 @@ const ICONS = {
   MessageCircle,
   Clapperboard,
   Sparkles,
+  Image,
+  Newspaper,
 }
 
 /**

@@ -12,6 +12,7 @@ import { feedbackConfig } from '../config/feedbackConfig'
 import * as feedbackService from '../services/feedbackService'
 import { formatRelativeTime, sha256 } from '../utils/date'
 import { navigate } from '../utils/router'
+import Toggle from './Toggle'
 import Reveal from './Reveal'
 import DataStatusBadge from './DataStatusBadge'
 import { useDataStatus } from '../hooks/useDataStatus'
@@ -261,22 +262,11 @@ function SubmitSection() {
         <div className="mt-3 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2.5">
             <span className="text-[13px] font-medium text-ink">匿名提交</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={form.anonymous}
-              aria-label="匿名提交开关"
-              onClick={() => setForm((f) => ({ ...f, anonymous: !f.anonymous }))}
-              className={`relative h-7 w-12 rounded-full transition-colors duration-300 ${
-                form.anonymous ? 'bg-accent' : 'bg-black/15 dark:bg-white/20'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-300 ${
-                  form.anonymous ? 'translate-x-[22px]' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
+            <Toggle
+              checked={form.anonymous}
+              onChange={(v) => setForm((f) => ({ ...f, anonymous: v }))}
+              label="匿名提交开关"
+            />
           </div>
           {!form.anonymous && (
             <div className="flex items-center gap-2">

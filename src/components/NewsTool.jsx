@@ -16,17 +16,18 @@ import {
 import {
   getDefaultOptions,
   newsToolOptions,
-  newsToolStatus,
 } from '../data/newsToolConfig'
 import * as newsService from '../services/newsService'
+import { aiConfig, aiModels } from '../config/aiConfig'
 import Reveal from './Reveal'
+import Toggle from './Toggle'
 
 /**
- * 新闻初稿生成工具 —— 已接入智谱 GLM-4-Flash（免费）
+ * 新闻初稿生成工具 —— 已接入智谱 GLM 双模型（快速/深度，均免费）
  *
  * 扩展方式：
  *  - 新增选项：编辑 src/data/newsToolConfig.js（控件随配置自动渲染）
- *  - 更换模型：编辑 src/config/aiConfig.js
+ *  - 更换/新增模型：编辑 src/config/aiConfig.js（aiModels）
  *  - 生成逻辑：src/services/newsService.js
  */
 export default function NewsTool() {
@@ -41,6 +42,8 @@ const NewsCtx = createContext(null)
 const useNews = () => useContext(NewsCtx)
 
 function NewsToolSection() {
+  const { modelMode } = useNews()
+  const activeModel = aiModels[modelMode] || aiModels[aiConfig.defaultMode]
   return (
     <section id="news" className="scroll-mt-24 px-5 py-16 md:px-8 md:py-20">
       <div className="mx-auto max-w-6xl">
@@ -62,7 +65,7 @@ function NewsToolSection() {
               </div>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[12px] text-white/60">
                 <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-                已接入 {newsToolStatus.modelLabel} · 免费
+                已接入 {activeModel.model} · 免费
               </span>
             </div>
 
@@ -87,6 +90,8 @@ function NewsToolSection() {
 function NewsProvider({ children }) {
   // 表单状态（选项值）
   const [form, setForm] = useState(getDefaultOptions)
+  // 模型模式：'quick' | 'deep'（默认取 aiConfig.defaultMode）
+  const [modelMode, setModelMode] = useState(aiConfig.defaultMode)
   // 生成状态机：idle | generating | done | error
   const [status, setStatus] = useState('idle')
   const [raw, setRaw] = useState('') // 流式累计原文
@@ -106,6 +111,7 @@ function NewsProvider({ children }) {
   const generate = async () => {
     if (!form.theme.trim() || status === 'generating') return
     const options = { ...form }
+    const mode = modelMode
     setStatus('generating')
     setRaw('')
     setDraft(null)
@@ -115,7 +121,7 @@ function NewsProvider({ children }) {
     abortRef.current = ac
     let text = ''
     try {
-      for await (const chunk of newsService.streamDraft(options, ac.signal)) {
+      for await (const chunk of newsService.streamDraft(options, ac.signal, mode)) {
         text += chunk
         setRaw(text)
       }
@@ -123,7 +129,7 @@ function NewsProvider({ children }) {
       setDraft(parsed)
       setStatus('done')
       if (parsed) {
-        newsService.saveHistory({ options, raw: text, draft: parsed })
+        newsService.saveHistory({ options, raw: text, draft: parsed, mode })
         refreshHistory()
       }
     } catch (err) {
@@ -153,6 +159,7 @@ function NewsProvider({ children }) {
     setRaw(entry.raw)
     setStatus('done')
     setError('')
+    if (entry.mode && aiModels[entry.mode]) setModelMode(entry.mode)
   }
 
   const clearHistory = () => {
@@ -163,6 +170,8 @@ function NewsProvider({ children }) {
   const value = {
     form,
     setField,
+    modelMode,
+    setModelMode,
     status,
     raw,
     draft,
@@ -182,7 +191,8 @@ function NewsProvider({ children }) {
    左栏：选项编辑区
    ============================================================ */
 function OptionPanel() {
-  const { form, setField, status, canGenerate, generate, stop } = useNews()
+  const { form, setField, status, canGenerate, generate, stop, modelMode, setModelMode } =
+    useNews()
   const busy = status === 'generating'
 
   return (
@@ -192,6 +202,41 @@ function OptionPanel() {
         <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/70">
           {newsToolOptions.length} 项配置
         </span>
+      </div>
+
+      {/* 模型模式选择（v4：快速/深度双模式） */}
+      <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] font-medium text-white/80">模型模式</span>
+          <span className="text-[11.5px] text-white/40">
+            {aiModels[modelMode]?.model}
+          </span>
+        </div>
+        <div className="mt-3 flex gap-2" role="radiogroup" aria-label="模型模式选择">
+          {Object.values(aiModels).map((m) => {
+            const active = modelMode === m.id
+            return (
+              <button
+                key={m.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                disabled={busy}
+                onClick={() => setModelMode(m.id)}
+                className={`pressable flex-1 rounded-xl px-3 py-2 text-left transition-colors duration-300 disabled:cursor-not-allowed ${
+                  active
+                    ? 'bg-accent text-white'
+                    : 'border border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
+                }`}
+              >
+                <span className="block text-[13px] font-semibold">{m.label}</span>
+                <span className={`mt-0.5 block text-[11px] ${active ? 'text-white/80' : 'text-white/40'}`}>
+                  {m.note}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <div className="mt-5 space-y-4">
@@ -410,22 +455,9 @@ function OptionField({ opt, value, disabled, onChange }) {
     return (
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-medium text-white/80">{opt.label}</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={on}
-          disabled={disabled}
-          onClick={() => onChange(!on)}
-          className={`relative h-7 w-12 rounded-full transition-colors duration-300 disabled:opacity-60 ${
-            on ? 'bg-accent' : 'bg-white/15'
-          }`}
-        >
-          <span
-            className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-300 ${
-              on ? 'translate-x-[22px]' : 'translate-x-0.5'
-            }`}
-          />
-        </button>
+        <div className={disabled ? 'opacity-60' : ''}>
+          <Toggle checked={on} onChange={onChange} label={`${opt.label}开关`} />
+        </div>
       </div>
     )
   }
@@ -437,7 +469,7 @@ function OptionField({ opt, value, disabled, onChange }) {
    右栏：预览 / 输出区
    ============================================================ */
 function PreviewPanel() {
-  const { status, raw, draft, error, generate, reset } = useNews()
+  const { status, raw, draft, error, generate, reset, modelMode } = useNews()
 
   const copy = async () => {
     const text = draft ? newsService.draftToText(draft) : raw
@@ -545,7 +577,7 @@ function PreviewPanel() {
       )}
 
       <p className="mt-4 text-[12px] leading-relaxed text-white/35">
-        已接入智谱 GLM-4-Flash（免费模型）· 生成内容请人工核对姓名、数字等事实后再发布
+        当前模型：{aiModels[modelMode]?.model}（{aiModels[modelMode]?.label}模式）· 生成内容请人工核对姓名、数字等事实后再发布
       </p>
     </div>
   )

@@ -89,6 +89,7 @@ try {
     '事件要点与背景',
     '意见反馈',
     '活动风采',
+    '内部教程',
   ]) {
     check(`包含「${t}」`, await textExists(page, t))
   }
@@ -99,6 +100,12 @@ try {
     as.filter((a) => !a.rel.includes('noopener')).map((a) => a.href),
   )
   check('外链均带 rel="noopener"（共 ' + (await page.$$('a[target="_blank"]')).length + ' 个）', badLinks.length === 0)
+
+  console.log('\n[1.5] 工具链接（v4：醒图/秀米 + 品牌色）')
+  const toolLinks = await page.$$eval('a[target="_blank"]', (as) => as.map((a) => a.href))
+  check('醒图链接存在', toolLinks.some((h) => h.includes('retouchpics.com')))
+  check('秀米链接存在', toolLinks.some((h) => h.includes('xiumi.us')))
+  check('首页教程入口卡片存在', (await page.$('a[href="#/tutorials"]')) !== null)
 
   console.log('\n[2] 数据状态徽标')
   const badgeTexts = await page.evaluate(() => {
@@ -227,7 +234,7 @@ try {
   await sleep(400)
   check('重置示例后恢复默认数据', !(await textExists(page, '测试值班员')))
 
-  console.log('\n[11] 新闻工具（必填校验）')
+  console.log('\n[11] 新闻工具（必填校验 + v4 模型双模式）')
   const genBtn = await page.$('button::-p-text(生成初稿)')
   check('未填写要点时生成按钮禁用', await page.evaluate(
     (el) => el.disabled || el.getAttribute('aria-disabled') === 'true', genBtn,
@@ -239,6 +246,22 @@ try {
     (el) => el.disabled || el.getAttribute('aria-disabled') === 'true',
     await page.$('button::-p-text(生成初稿)'),
   )))
+  // 模型双模式：默认深度 + 徽标动态型号
+  const deepRadio = await page.$('button[role="radio"][aria-checked="true"]')
+  check('存在模型模式选择且默认选中', deepRadio !== null && (await page.evaluate(
+    (el) => el.textContent.includes('深度'), deepRadio,
+  )))
+  check('徽标显示 glm-4.5-flash', await page.evaluate(() =>
+    [...document.querySelectorAll('span')].some((s) => s.textContent.includes('glm-4.5-flash')),
+  ))
+  // 切换到快速模式
+  await page.click('button[role="radio"]::-p-text(快速)')
+  await sleep(200)
+  check('切换后徽标显示 glm-4-flash', await page.evaluate(() =>
+    [...document.querySelectorAll('span')].some((s) => s.textContent.includes('glm-4-flash')),
+  ))
+  // 切回深度（默认）
+  await page.click('button[role="radio"]::-p-text(深度)')
 
   console.log('\n[12] 意见反馈页（路由 + 提交 + 列表）')
   await page.click('a[href="#/feedback"]')
@@ -247,6 +270,30 @@ try {
   await page.click('button::-p-text(技术与设计问题)')
   await sleep(300)
   await page.type('textarea[placeholder^="请描述你遇到的问题"]', '这是冒烟测试反馈内容')
+  // v4：开关组件重构断言（点击后 aria-checked 翻转、圆点在轨道内）
+  const switchBefore = await page.evaluate(() => {
+    const sw = document.querySelector('button[role="switch"][aria-label="匿名提交开关"]')
+    return sw ? sw.getAttribute('aria-checked') : null
+  })
+  await page.click('button[role="switch"][aria-label="匿名提交开关"]')
+  await sleep(200)
+  const switchAfter = await page.evaluate(() => {
+    const sw = document.querySelector('button[role="switch"][aria-label="匿名提交开关"]')
+    const knob = sw?.querySelector('span')
+    const rect = sw?.getBoundingClientRect()
+    const krect = knob?.getBoundingClientRect()
+    return {
+      checked: sw?.getAttribute('aria-checked'),
+      inside: rect && krect ? krect.right <= rect.right + 1 && krect.left >= rect.left - 1 : false,
+    }
+  })
+  check(
+    `匿名开关点击后状态翻转（${switchBefore} -> ${switchAfter.checked}）`,
+    switchBefore === 'true' && switchAfter.checked === 'false',
+  )
+  check('开关圆点位于轨道内（不越界）', switchAfter.inside)
+  // 恢复匿名状态
+  await page.click('button[role="switch"][aria-label="匿名提交开关"]')
   await page.click('button::-p-text(提交反馈)')
   await sleep(600)
   check('提交后显示「已提交」', await textExists(page, '已提交，感谢反馈'))
@@ -254,6 +301,35 @@ try {
   check('匿名展示', await textExists(page, '匿名'))
   await page.click('a[href="#/"]')
   await sleep(500)
+  check('返回首页成功', (await page.evaluate(() => window.location.hash)) === '#/')
+
+  console.log('\n[12.5] 教程中心（v4）')
+  await page.click('a[href="#/tutorials"]')
+  await sleep(500)
+  check('进入教程中心', (await page.evaluate(() => window.location.hash)) === '#/tutorials')
+  for (const t of ['摄影技术', '新闻与图像处理', '摄像技术', '新媒体运营', '暂未开通，敬请期待']) {
+    check(`板块「${t}」`, await textExists(page, t))
+  }
+  await page.click('a[href="#/tutorials/photography"]')
+  await sleep(600)
+  check('进入摄影教程', (await page.evaluate(() => window.location.hash)) === '#/tutorials/photography')
+  check('第一章渲染', await textExists(page, '序章：身份与任务'))
+  const progress1 = await page.evaluate(() => {
+    const bar = document.querySelector('[role="progressbar"]')
+    return bar ? bar.getAttribute('aria-valuenow') : null
+  })
+  check(`进度条初始 ${progress1}%（1/9 章）`, progress1 === '11.11111111111111' || progress1 === '11')
+  await page.click('button::-p-text(下一章)')
+  await sleep(300)
+  check('翻页到第二章', await textExists(page, '第一章：摄影基础速成'))
+  // 跳转到参数速查表章节（第九章）
+  await page.click('button[aria-label*="第七章：参数速查表"]')
+  await sleep(300)
+  check('参数速查表渲染', await textExists(page, '室内会议') && await textExists(page, '舞台演出'))
+  await page.click('a[href="#/tutorials"]')
+  await sleep(400)
+  await page.click('a[href="#/"]')
+  await sleep(400)
   check('返回首页成功', (await page.evaluate(() => window.location.hash)) === '#/')
 
   console.log('\n[13] 备份导出')

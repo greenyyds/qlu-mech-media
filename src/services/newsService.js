@@ -6,7 +6,7 @@
  *            接口为 OpenAI 兼容格式，可无缝切换其他兼容服务。
  * ▍历史记录：localStorage 持久化（最近 5 条），数据层与 UI 分离。
  */
-import { aiConfig } from '../config/aiConfig'
+import { aiConfig, aiModels } from '../config/aiConfig'
 
 const HISTORY_KEY = 'qlu-mech-media:news-history:v1'
 const HISTORY_MAX = 5
@@ -59,11 +59,13 @@ function buildUserMessage(options = {}) {
 
 /**
  * 流式生成新闻初稿（SSE）
- * @param {object}  options 选项对象（见 newsToolConfig）
+ * @param {object}   options 选项对象（见 newsToolConfig）
  * @param {AbortSignal} signal 中止信号（用于"停止生成"）
+ * @param {string}   mode 模型模式：'quick' | 'deep'（默认取 aiConfig.defaultMode）
  * @returns {AsyncGenerator<string>} 逐段产出文本增量
  */
-export async function* streamDraft(options = {}, signal) {
+export async function* streamDraft(options = {}, signal, mode) {
+  const modelInfo = aiModels[mode] || aiModels[aiConfig.defaultMode] || aiModels.deep
   const attemptFetch = async () => {
     const res = await fetch(aiConfig.baseUrl, {
       method: 'POST',
@@ -72,7 +74,7 @@ export async function* streamDraft(options = {}, signal) {
         Authorization: `Bearer ${aiConfig.apiKey}`,
       },
       body: JSON.stringify({
-        model: aiConfig.model,
+        model: modelInfo.model,
         stream: true,
         temperature: aiConfig.temperature,
         max_tokens: aiConfig.maxTokens,
