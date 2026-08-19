@@ -20,10 +20,36 @@ const PLAN = [
   { dir: '学生活动', out: 'activity.webp', width: 1280 },
 ]
 
+// 新闻与图像处理教程素材（手机操作截图，竖屏）
+const NEWS_PLAN = [
+  { dir: '公众号页面截图', out: 'gongzhonghao.webp', width: 640 },
+  { dir: '醒图智能抠图', out: 'retouch-ai.webp', width: 640 },
+]
+
 mkdirSync(OUT_DIR, { recursive: true })
 
 for (const p of PLAN) {
   const dir = join(SRC_DIR, p.dir)
+  const files = readdirSync(dir).filter((f) => /\.(jpe?g|png)$/i.test(f))
+  if (!files.length) {
+    console.log(`⚠️ ${p.dir} 目录无图片，跳过`)
+    continue
+  }
+  const src = join(dir, files[0])
+  const out = join(OUT_DIR, p.out)
+  const before = statSync(src).size
+  await sharp(src)
+    .resize(p.width, null, { withoutEnlargement: true })
+    .webp({ quality: 78 })
+    .toFile(out)
+  const after = statSync(out).size
+  console.log(`${p.dir} -> ${p.out}  ${(before / 1024).toFixed(0)}KB -> ${(after / 1024).toFixed(0)}KB`)
+}
+
+// 新闻与图像处理教程素材（子目录结构：素材/新闻与图像处理教程/<dir>/）
+const NEWS_SRC = join(ROOT, '素材', '新闻与图像处理教程')
+for (const p of NEWS_PLAN) {
+  const dir = join(NEWS_SRC, p.dir)
   const files = readdirSync(dir).filter((f) => /\.(jpe?g|png)$/i.test(f))
   if (!files.length) {
     console.log(`⚠️ ${p.dir} 目录无图片，跳过`)

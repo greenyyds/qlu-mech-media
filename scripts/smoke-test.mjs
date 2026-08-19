@@ -303,13 +303,19 @@ try {
   await sleep(500)
   check('返回首页成功', (await page.evaluate(() => window.location.hash)) === '#/')
 
-  console.log('\n[12.5] 教程中心（v4）')
+  console.log('\n[12.5] 教程中心（v4 / v4.2 双板块）')
   await page.click('a[href="#/tutorials"]')
   await sleep(500)
   check('进入教程中心', (await page.evaluate(() => window.location.hash)) === '#/tutorials')
   for (const t of ['摄影技术', '新闻与图像处理', '摄像技术', '新媒体运营', '暂未开通，敬请期待']) {
     check(`板块「${t}」`, await textExists(page, t))
   }
+  const availableCount = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('a[href^="#/tutorials/"]')]
+    return cards.filter((a) => a.textContent.includes('已上线')).length
+  })
+  check(`两个板块标记「已上线」（实际 ${availableCount}）`, availableCount === 2)
+  // 摄影教程
   await page.click('a[href="#/tutorials/photography"]')
   await sleep(600)
   check('进入摄影教程', (await page.evaluate(() => window.location.hash)) === '#/tutorials/photography')
@@ -326,6 +332,18 @@ try {
   await page.click('button[aria-label*="第七章：参数速查表"]')
   await sleep(300)
   check('参数速查表渲染', await textExists(page, '室内会议') && await textExists(page, '舞台演出'))
+  // v4.2：新闻与图像处理教程
+  await page.click('a[href="#/tutorials"]')
+  await sleep(400)
+  await page.click('a[href="#/tutorials/news-editing"]')
+  await sleep(600)
+  check('进入新闻与图像处理教程', (await page.evaluate(() => window.location.hash)) === '#/tutorials/news-editing')
+  check('序章渲染', await textExists(page, '序章：身份与任务'))
+  check('AI 写作章节存在', (await page.$('button[aria-label*="AI 时代新闻文稿创作高效方式"]')) !== null)
+  // 跳到公文格式章节（第五章）
+  await page.click('button[aria-label*="第四章：公文格式规范"]')
+  await sleep(300)
+  check('公文格式表渲染', await textExists(page, '方正小标宋简体') && await textExists(page, '页边距'))
   await page.click('a[href="#/tutorials"]')
   await sleep(400)
   await page.click('a[href="#/"]')

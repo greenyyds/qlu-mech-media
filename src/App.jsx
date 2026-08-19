@@ -12,6 +12,7 @@ import Footer from './components/Footer'
 import FeedbackPage from './components/FeedbackPage'
 import TutorialsPage from './components/TutorialsPage'
 import PhotographyTutorial from './components/PhotographyTutorial'
+import NewsEditingTutorial from './components/NewsEditingTutorial'
 import PwaUpdateToast from './components/PwaUpdateToast'
 import OfflineNotice from './components/OfflineNotice'
 import { useHashRoute } from './utils/router'
@@ -70,6 +71,8 @@ export default function App() {
         <TutorialsPage />
       ) : route === '/tutorials/photography' ? (
         <PhotographyTutorial />
+      ) : route === '/tutorials/news-editing' ? (
+        <NewsEditingTutorial />
       ) : (
         <main id="main">
           <Hero />
