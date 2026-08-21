@@ -6,7 +6,7 @@ import { useTheme } from '../hooks/useTheme'
 /** 导航锚点配置 */
 const NAV_LINKS = [
   { id: 'home', label: '首页' },
-  { id: 'links', label: '媒体链接' },
+  { id: 'links', label: '链接', href: '#/links' },
   { id: 'news', label: '新闻工具' },
   { id: 'tasks', label: '任务规划' },
   { id: 'roster', label: '值班表' },

@@ -1,7 +1,18 @@
-import { ArrowUpRight, Building2, Clapperboard, Globe, Image, MessageCircle, Newspaper, Sparkles } from 'lucide-react'
+import { useEffect } from 'react'
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Building2,
+  Clapperboard,
+  Globe,
+  Image,
+  MessageCircle,
+  Newspaper,
+  Sparkles,
+} from 'lucide-react'
 import { linkGroups } from '../data/links'
+import { navigate } from '../utils/router'
 import Reveal from './Reveal'
-import SectionHeading from './SectionHeading'
 
 /** 图标映射：data/links.js 中的 icon 键 -> lucide 组件 */
 const ICONS = {
@@ -15,39 +26,54 @@ const ICONS = {
 }
 
 /**
- * 常用链接模块
- * 两个分组：媒体链接（校官网 / 学部官网 / 公众号）、工具链接（剪映 / DeepSeek）
+ * 链接二级页（#/links，v4.3）
+ * 原首页"常用链接"模块迁移至此：媒体链接 + 工具链接
  * 数据维护入口：src/data/links.js
  */
-export default function QuickLinks() {
+export default function LinksPage() {
+  useEffect(() => {
+    document.title = '链接 · 机械工程学部全媒体工作台'
+    return () => {
+      document.title = '机械工程学部全媒体工作台'
+    }
+  }, [])
+
   return (
-    <section id="links" className="scroll-mt-24 px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-6xl">
+    <main className="min-h-screen pb-16 pt-10 md:pb-24">
+      <div className="mx-auto max-w-5xl px-5 md:px-8">
         <Reveal>
-          <SectionHeading
-            eyebrow="Quick Links"
-            title="常用链接"
-            description="官方渠道与日常创作工具，点击卡片在新窗口打开。"
-          />
+          <a
+            href="#/"
+            onClick={(e) => {
+              e.preventDefault()
+              navigate('/')
+            }}
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-accent transition-opacity hover:opacity-80"
+          >
+            <ArrowLeft size={15} aria-hidden="true" />
+            返回首页
+          </a>
+          <h1 className="mt-4 text-3xl font-bold tracking-[-0.02em] text-ink md:text-4xl">链接</h1>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-secondary">
+            官方渠道与日常创作工具，点击卡片在新窗口打开。
+          </p>
         </Reveal>
 
-        <div className="mt-12 space-y-12">
+        <div className="mt-8 space-y-12">
           {linkGroups.map((group, gi) => (
             <div key={group.id}>
               <Reveal>
                 <div className="mb-5 flex items-baseline justify-between">
-                  <h3 className="text-lg font-semibold tracking-[-0.01em] text-ink">
+                  <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">
                     {group.title}
-                  </h3>
+                  </h2>
                   <span className="text-[13px] text-tertiary">{group.description}</span>
                 </div>
               </Reveal>
 
               <div
                 className={`grid gap-4 ${
-                  group.links.length > 2
-                    ? 'sm:grid-cols-2 lg:grid-cols-3'
-                    : 'sm:grid-cols-2'
+                  group.links.length > 2 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2'
                 }`}
               >
                 {group.links.map((link, i) => (
@@ -58,7 +84,7 @@ export default function QuickLinks() {
           ))}
         </div>
       </div>
-    </section>
+    </main>
   )
 }
 
@@ -80,7 +106,7 @@ function LinkCard({ link, delay }) {
           aria-hidden="true"
         />
       </div>
-      <h4 className="mt-4 text-[17px] font-semibold text-ink">{link.name}</h4>
+      <h3 className="mt-4 text-[17px] font-semibold text-ink">{link.name}</h3>
       <p className="mt-1.5 text-[13px] leading-relaxed text-secondary">{link.desc}</p>
     </>
   )

@@ -4,7 +4,7 @@ import NoticeBanner from './components/NoticeBanner'
 import Hero from './components/Hero'
 import Gallery from './components/Gallery'
 import TutorialEntry from './components/TutorialEntry'
-import QuickLinks from './components/QuickLinks'
+import LinksPage from './components/LinksPage'
 import NewsTool from './components/NewsTool'
 import TaskBoard from './components/TaskBoard'
 import DutyRoster from './components/DutyRoster'
@@ -73,12 +73,13 @@ export default function App() {
         <PhotographyTutorial />
       ) : route === '/tutorials/news-editing' ? (
         <NewsEditingTutorial />
+      ) : route === '/links' ? (
+        <LinksPage />
       ) : (
         <main id="main">
           <Hero />
           <Gallery />
           <TutorialEntry />
-          <QuickLinks />
           <NewsTool />
           <TaskBoard />
           <DutyRoster />

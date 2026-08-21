@@ -82,7 +82,6 @@ try {
   await page.goto(PREVIEW_URL, { waitUntil: 'networkidle0', timeout: 30000 })
   for (const t of [
     '机械工程学部全媒体工作台',
-    '常用链接',
     '新闻初稿生成工具',
     '本周重点任务',
     '本周值班表',
@@ -93,18 +92,28 @@ try {
   ]) {
     check(`包含「${t}」`, await textExists(page, t))
   }
-  for (const id of ['home', 'links', 'news', 'tasks', 'roster', 'about']) {
+  for (const id of ['home', 'news', 'tasks', 'roster', 'about']) {
     check(`锚点区块 #${id} 存在`, (await page.$(`#${id}`)) !== null)
   }
-  const badLinks = await page.$$eval('a[target="_blank"]', (as) =>
-    as.filter((a) => !a.rel.includes('noopener')).map((a) => a.href),
-  )
-  check('外链均带 rel="noopener"（共 ' + (await page.$$('a[target="_blank"]')).length + ' 个）', badLinks.length === 0)
+  check('首页无常用链接模块（已迁移二级页）', !(await textExists(page, '常用链接')))
+  check('导航含「链接」入口', (await page.$('a[href="#/links"]')) !== null)
 
-  console.log('\n[1.5] 工具链接（v4：醒图/秀米 + 品牌色）')
+  console.log('\n[1.5] 链接二级页（v4.3：#/links）')
+  await page.click('a[href="#/links"]')
+  await sleep(500)
+  check('进入链接二级页', (await page.evaluate(() => window.location.hash)) === '#/links')
+  check('页面含「链接」标题', await textExists(page, '链接'))
   const toolLinks = await page.$$eval('a[target="_blank"]', (as) => as.map((a) => a.href))
   check('醒图链接存在', toolLinks.some((h) => h.includes('retouchpics.com')))
   check('秀米链接存在', toolLinks.some((h) => h.includes('xiumi.us')))
+  check('媒体链接分组存在', await textExists(page, '媒体链接'))
+  const badLinks2 = await page.$$eval('a[target="_blank"]', (as) =>
+    as.filter((a) => !a.rel.includes('noopener')).map((a) => a.href),
+  )
+  check('外链均带 rel="noopener"（共 ' + (await page.$$('a[target="_blank"]')).length + ' 个）', badLinks2.length === 0)
+  await page.click('a[href="#/"]')
+  await sleep(400)
+  check('返回首页成功', (await page.evaluate(() => window.location.hash)) === '#/')
   check('首页教程入口卡片存在', (await page.$('a[href="#/tutorials"]')) !== null)
 
   console.log('\n[2] 数据状态徽标')
